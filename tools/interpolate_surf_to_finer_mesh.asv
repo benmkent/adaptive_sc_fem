@@ -1,0 +1,17 @@
+filename = '/home/ben/Documents/GitHub/PhD/third_year/paper/latex/EfficientAdaptiveSCforAdvDiff/figures/l4base/exp_tab1.dat';
+
+in = readmatrix(filename);
+
+% Original mesh
+x_in = in(:,1);
+y_in = in(:,2);
+u_in = in(:,3);
+
+n=length(x_in);
+nsqrt = sqrt(n);
+% Reshape
+x_grid = reshape(x_in,[nsqrt,nsqrt]).';
+y_grid = reshape(y_in,[nsqrt,nsqrt]).';
+u_grid = reshape(u_in,[nsqrt,nsqrt]).';
+
+interp2(x_grid,y_grid,u_grid_new,u_grid_new);

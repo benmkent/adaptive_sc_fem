@@ -1,0 +1,62 @@
+function problem = define_problem(name)
+switch name
+    case 'doubleglazing'
+        problem.linear = 1;
+        problem.wind_fn = 'recirculating-uncertain';
+        problem.nWind = 4;
+        problem.sigmaWind = 0.5;
+
+        problem.diff_fn = 'fixed';
+        problem.viscosity = 1e-1;
+        problem.nDiff = 0;
+
+        problem.bc = 'hotwall';
+        problem.tau = 1e-1;
+        problem.f = 'zero';
+
+    case 'vidlickova'
+        problem.linear = 1;
+        problem.wind_fn = 'zero';
+        problem.nWind = 0;
+
+        problem.diff_fn = 'vidlickova';
+        problem.nDiff = 2;
+
+        problem.bc = 'dirichlet';
+        problem.f = 'vidlickova';
+
+    case 'eigel'
+        problem.linear = 1;
+        problem.wind_fn = 'zero';
+        problem.nWind = 0;
+
+        problem.diff_fn = 'eigel';
+        problem.nDiff = 10;
+
+        problem.bc = 'dirichlet';
+        problem.f = 'vidlickova';
+
+    case ''
+    otherwise
+        problem.linear = 1;
+        problem.wind_fn = 'zero'; %'recirculating' ; %'xonly-weak'; % 'recirculating-uncertain'; %'pouiseuille'; %% 'prevailing-perturbed'; %'recirculating-uncertain'; %'zero'; %'recirculating'; %'xonly-weak'; %  'zero'; %%-perturbed'; %'recirculating-uncertain'; % 'recirculating'; %'recirculating-alt'; %'recirculating-uncertain'; %'zero';'zero'; %
+        problem.nWind = 0;
+        problem.sigmaWind = 0.5;
+
+        problem.diff_fn = 'eigel'; %'fixed'; %'complex'; %%'fixed'; %'vidlickova'; %'eigel';
+        problem.viscosity = 1e-1;
+
+        problem.nDiff = 10;
+
+        problem.n = problem.nWind+problem.nDiff;
+        problem.linear =0;
+        problem.wind_fn = 'groundwater';
+        problem.diff_fn = 'groundwater';
+        problem.n = 5;
+
+        problem.bc = 'dirichlet'; %'pipe'; %'neumann'; %'hotwall'; %%
+        problem.tau = 1e-1;
+
+        problem.f = 'one'; %'square'; % 'zero'; %'vidlickova'; %'one'; %'square'; %'circle'
+end
+end

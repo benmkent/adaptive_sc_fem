@@ -1,0 +1,3 @@
+function precompute = initialise_precomputed_data(params)
+
+precompute.lagrange_product_integrals = precompute_lagrange_integrals(params);
