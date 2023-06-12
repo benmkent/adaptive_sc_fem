@@ -1,4 +1,4 @@
-he code corresponding to the preprint [Efficient Adaptive Stochastic Collocation Strategies for Advection-Diffusion Problems with Uncertain Inputs
+The code corresponding to the preprint [Efficient Adaptive Stochastic Collocation Strategies for Advection-Diffusion Problems with Uncertain Inputs
 ](https://arxiv.org/abs/2210.03389) is now released on [GitHub](https://github.com/benmkent/adaptive_sc_fem).
 
 # Required MATLAB packages
@@ -7,15 +7,24 @@ To use the pacakge ensure the path contains:
 - [Sparse Grids MATLAB Kit](https://sites.google.com/view/sparse-grids-kit)
 
 # Running the examples
-There are two examples included corresponding to the examples in the paper.
-The four parameter example is walked through below.
+There are two examples included corresponding to the examples in {% cite Kent2022 %}.
+These are the scripts
+```matlab
+run_experiment_4_dim.m
+```
+and
+```matlab
+run_experiment_64_dimensional.m
+```
+The four parameter example is annotated below.
 
 First the test problem is defined.
 ```matlab
 %% Define problem
 problem = define_problem('doubleglazing');
 ```
-A reference solution is set up. Approximation errors will be computed with respect to this solution.
+A reference solution is set up. Approximation errors will be computed with respect to this solution. A prompt stating
+```Load file reference.mat :```. Input ```0``` (this creates a reference approximation instead of loading a precomputed one).
 ```matlab
 %% Set up reference
 params = define_params('l4-jomp');
