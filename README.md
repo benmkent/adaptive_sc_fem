@@ -7,7 +7,8 @@ To use the pacakge ensure the path contains:
 - [Sparse Grids MATLAB Kit](https://sites.google.com/view/sparse-grids-kit)
 
 # Running the examples
-There are two examples included corresponding to the examples in {% cite Kent2022 %}.
+There are two examples included corresponding to the examples in [Efficient Adaptive Stochastic Collocation Strategies for Advection-Diffusion Problems with Uncertain Inputs
+](https://arxiv.org/abs/2210.03389).
 These are the scripts
 ```matlab
 run_experiment_4_dim.m
