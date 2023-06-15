@@ -1,5 +1,5 @@
-The code corresponding to the preprint [Efficient Adaptive Stochastic Collocation Strategies for Advection-Diffusion Problems with Uncertain Inputs
-](https://arxiv.org/abs/2210.03389) is now released on [GitHub](https://github.com/benmkent/adaptive_sc_fem).
+This is the code corresponding to the preprint [Efficient Adaptive Stochastic Collocation Strategies for Advection-Diffusion Problems with Uncertain Inputs
+](https://arxiv.org/abs/2210.03389).
 
 # Required MATLAB packages
 To use the pacakge ensure the path contains:
