@@ -148,16 +148,20 @@ plot(ax5, reference.data_table{:,'t'}, mean(ge_ref_in_super.*Iref_in_super,2,'om
 plot(ax5, reference.data_table{:,'t'}, max(ge_ref_in_super.*Iref_in_super,[],2,'omitnan'));
 plot(ax5, reference.data_table{:,'t'}, tserror_zero);
 set(gca,'XScale','log','YScale','log');
+xlabel('t')
+legend('mean GTE est', 'max GTE est', 'mean GTE', 'max GTE', 'GTE z=0')
+title('Global Timestepping Error and Error Estimates')
 %matlab2tikz('filename',['ge_error.tex']);
 
 %% Plot error v estimators
 est_mean = mean(ge_est_in_super.*I_in_super,2,'omitnan');
-h(end+1) = figure(); cla(); hold on; ax = gca();
-plot(data_table,'t','pi');
-plot(reference.data_table,'t','error','Marker','x');
-plot(data_table{:,'t'},data_table{:,'pi_I'} + est_mean);
-legend('show'); set(gca,'XScale','log','YScale','log');
-%matlab2tikz('filename',['error-est.tex']);
+% h(end+1) = figure(); cla(); hold on; ax = gca();
+% plot(data_table,'t','pi');
+% plot(reference.data_table,'t','error','Marker','x');
+% plot(data_table{:,'t'},data_table{:,'pi_I'} + est_mean);
+% legend('show'); set(gca,'XScale','log','YScale','log');
+% title('')
+% matlab2tikz('filename',['error-est.tex']);
 
 h(end+1) = figure(); cla(); hold on;
 t_union = unique([reference.data_table{:,'t'};]); %data_table{:,'t'}]);
@@ -169,7 +173,10 @@ set(gca,'XScale','log','YScale','log');
 est_union2 = interp1(data_table{inds_valid,'t'}, data_table{inds_valid,'pi_I'} + est_mean(inds_valid), t_union,'linear');
 plot(t_union, est_union2./error_union,'x');
 set(gca,'XScale','log','YScale','log');
+xlabel('t'),ylabel('Error Estimator Effectivity \nu')
+legend('Full','Simplified')
 %matlab2tikz('filename',['efficiency.tex']);
+title('Estimator Effectivities')
 
 for ii = 1:size(I_in_super,2)
     error_ge_est_union(:,ii) = interp1(data_table{inds_valid,'t'}, ge_est_in_super(inds_valid,ii), t_union,'linear');
@@ -181,18 +188,24 @@ plot(t_union, mean(efficiency_ge,2,'omitnan'));
 plot(t_union, min(efficiency_ge,[],2,'omitnan'));
 plot(t_union, max(efficiency_ge,[],2,'omitnan'));
 set(axGEEfficiency,'XScale','log','YScale','log');
+xlabel('t')
+ylabel('Global Timestepping Error Estimator Effectivity \nu_{ge}')
+legend('mean','min','max')
+title('GTE Error Estimator Effectivity')
 
 h(end+1) = figure(); cla();
 plot(data_table{:,'t'},data_table{:,'delta_t'});
 xlabel('t');ylabel('\Delta t^{alg}');
 set(gca,'XScale','log','YScale','log');
 %matlab2tikz('filename',['alg-timesteps.tex']);
+title('Adaptive SC timestep')
 
 h(end+1) = figure(); hold on; ax8 = gca(); cla();
 [dt_mean,dt_std, dt_min, dt_max] = plot_error_stats(ax8, data_table{:,'t'}, data_table{:,'dt_z'},[1,0,0]);
-xlabel('t'); ylabel('Timesteps');
+xlabel('t'); ylabel('\delta t');
 set(ax8,'XScale','log','YScale','log');
 %matlab2tikz('filename',['timestepping-timesteps.tex']);
+title('TR-AB2 Timesteps')
 
 h(end+1) = figure; hold on;
 n_steps_approx = cumsum(sum(n_steps_in_super.*I_in_super,2,'omitnan'));
@@ -200,12 +213,19 @@ n_steps_estimation = cumsum(sum(n_steps_in_super.*I_star_in_super,2,'omitnan') -
 plot(data_table{:,'t'}, n_steps_approx);
 plot(data_table{:,'t'}, n_steps_estimation);
 %matlab2tikz('filename',['cumulative-steps.tex']);
+xlabel('t');
+ylabel('n');
+legend('n_{approx}','n_{estimation}')
+title('Culmulative timesteps')
 
 h(end+1) = figure; hold on;
 plot(data_table{inds_valid,'t'},MI_max(inds_valid,:));
 set(gca,'XScale','log');
 legend('show');
+xlabel('t');
+ylabel('max_{\alpha \in I} \alpha_{i}')
 %matlab2tikz('filename',['max-mi.tex']);
+title('Maximum multi-index level in each dimension')
 
 % disp(MI{end});
 
