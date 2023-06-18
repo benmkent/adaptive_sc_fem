@@ -2,7 +2,7 @@ This is the code corresponding to the preprint [Efficient Adaptive Stochastic Co
 ](https://arxiv.org/abs/2210.03389).
 
 # Required MATLAB packages
-To use the pacakge ensure the path contains:
+To use the package ensure the path contains:
 - [IFISS 3.6](https://personalpages.manchester.ac.uk/staff/david.silvester/ifiss/)
 - [Sparse Grids MATLAB Kit](https://sites.google.com/view/sparse-grids-kit)
 
