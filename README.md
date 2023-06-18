@@ -2,7 +2,7 @@ This is the code corresponding to the preprint [Efficient Adaptive Stochastic Co
 ](https://arxiv.org/abs/2210.03389).
 
 # Required MATLAB packages
-To use the pacakge ensure the path contains:
+To use the package ensure the path contains:
 - [IFISS 3.6](https://personalpages.manchester.ac.uk/staff/david.silvester/ifiss/)
 - [Sparse Grids MATLAB Kit](https://sites.google.com/view/sparse-grids-kit)
 
@@ -25,18 +25,21 @@ First the test problem is defined.
 problem = define_problem('doubleglazing');
 ```
 A reference solution is then set up. Approximation errors will be computed with respect to this reference solution. A prompt stating
-```Load file reference.mat :``` will appear. Input ```0``` to continue (this creates a reference solution instead of loading a precomputed one).
+```'Load file? (1: reference.mat, otherwise: no reference)'```
+will appear. Input ```0``` to continue (i.e. do not load a precomputed reference approximation.). The main loop is run and produces a high fidelity reference approximation.
 ```matlab
-%% Set up reference
+%% Set up reference for assessing error estimates
 params = define_params('l4-jomp');
-params.l_initial = 5;
-params.letol = 1e-7;
+params.l_initial = 5; % Set reference Smolyak sparse grid level (polynomials including TD 5).
+params.letol = 1e-7; % Set reference local error tolerance
+params.reference = 1; % Set as reference approximation
+params.k_interp = inf; % Set parametric refinement threshold to inf (no refinement)
 adaptive_sc_fem;
 save(['reference.mat'],'reference','data_table','fem','problem','params', '-v7.3')
 ```
 
 The approximation is then constructed.
-The reference approximation is defined to be precomputed and saved within the current folder.
+The reference approximation is specified to be precomputed and saved within the current folder (we skip the load file option seen above).
 The parameters are set to the predefined set ```l4-jomp```.
 ```matlab
 %% Run experiments
