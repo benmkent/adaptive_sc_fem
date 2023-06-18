@@ -25,7 +25,8 @@ First the test problem is defined.
 problem = define_problem('doubleglazing');
 ```
 A reference solution is then set up. Approximation errors will be computed with respect to this reference solution. A prompt stating
-```Load file reference.mat :``` will appear. Input ```0``` to continue (this creates a reference solution instead of loading a precomputed one).
+```'Load file? (1: reference.mat, otherwise: no reference)'```
+will appear. Input ```0``` to continue (i.e. do not load a precomputed reference approximation.). The main loop is run and produces a high fidelity reference approximation.
 ```matlab
 %% Set up reference
 params = define_params('l4-jomp');
@@ -36,7 +37,7 @@ save(['reference.mat'],'reference','data_table','fem','problem','params', '-v7.3
 ```
 
 The approximation is then constructed.
-The reference approximation is defined to be precomputed and saved within the current folder.
+The reference approximation is specified to be precomputed and saved within the current folder (we skip the load file option seen above).
 The parameters are set to the predefined set ```l4-jomp```.
 ```matlab
 %% Run experiments
