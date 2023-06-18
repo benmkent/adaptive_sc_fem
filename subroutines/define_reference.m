@@ -4,7 +4,7 @@ reference.data_table = table([],[],[],[],[],[],[],[],'VariableNames',{'t','u','I
 reference.save = 0;
 
 if nargin == 0
-    load_file = default('Load file? (1 loads reference.mat, otherwise no reference',1);
+    load_file = default('Load file? (1: reference.mat, otherwise: no reference)',1);
     if load_file == 1
         try
             reference_approximation = load('reference.mat');

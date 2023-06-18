@@ -2,13 +2,10 @@
 addpath('./subroutines')
 addpath('./tools')
 addpath('./ifiss_modified')
-addpath('./verfurth/')
-addpath('./vidlickova/')
 addpath('./sparse-grid')
 addpath('./bk')
 
 addpath(genpath('../ifiss3.6'))
-addpath(genpath('../tifiss1.2'))
 addpath(genpath('../sparse-grids-matlab-kit_v-22-02_California'))
 
 %% Define inputs

@@ -1,10 +1,12 @@
 %% Define problem
 problem = define_problem('doubleglazing');
 
-%% Set up reference
+%% Set up reference for assessing error estimates
 params = define_params('l4-jomp');
-params.l_initial = 5;
-params.letol = 1e-7;
+params.l_initial = 5; % Set reference Smolyak sparse grid level (polynomials including TD 5).
+params.letol = 1e-7; % Set reference local error tolerance
+params.reference = 1; % Set as reference approximation
+params.k_interp = inf; % Set parametric refinement threshold to inf (no refinement)
 adaptive_sc_fem;
 save(['reference.mat'],'reference','data_table','fem','problem','params', '-v7.3')
 

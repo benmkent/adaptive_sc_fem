@@ -4,7 +4,6 @@ problem = define_problem('doubleglazing-64');
 %% Run experiments
 names = {'test-interp-jomp'};
 
-
 for name = names
     params = define_params(name{1});
 
