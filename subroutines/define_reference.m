@@ -29,5 +29,7 @@ else
         reference.reference_table = reference_approximation.reference.data_table;
         reference.times = reference_approximation.reference.times;
         reference.fem = reference_approximation.fem;
+        case 'none'
+            reference.reference_table = [];
     end
 end

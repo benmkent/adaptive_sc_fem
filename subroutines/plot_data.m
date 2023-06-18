@@ -242,7 +242,7 @@ refinement_times = data_t_shifted(~inds_valid);
 
 %% Refinement indices
 if ~isempty(refinement_times)
-    refinement_table = data_table(~inds_valid,'J','RM','pi_I_alpha');
+    refinement_table = data_table(~inds_valid,{'J','RM','pi_I_alpha'});
     refinement_inds=[];
     for ii = 1:size(refinement_table,1)
         refinement_inds_ii = refinement_table{ii,'J'}{1};
@@ -253,8 +253,8 @@ if ~isempty(refinement_times)
     refinement_estimators = [];
     for ii = 1:size(refinement_table,1)
         RM_ii = refinement_table{ii,'RM'}{1};
-        pi_I_alpha_ii = refinement_table{ii,'RM'}{1};
-        refinement_estimators = [refinement_estimators; repmat(refinement_times(ii),[size(refinement_inds_ii,1),1]) RM_ii pi_I_alpha_ii(:)];
+        pi_I_alpha_ii = refinement_table{ii,'pi_I_alpha'}{1};
+        refinement_estimators = [refinement_estimators; repmat(refinement_times(ii),[length(pi_I_alpha_ii),1]) RM_ii pi_I_alpha_ii(:)];
     end
 else
     refinement_inds = [];
