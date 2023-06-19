@@ -19,7 +19,7 @@ and
 ```matlab
 run_experiment_64_dimensional.m
 ```
-The output results in the four parameter problem are *slightly* different in this version of the source code, compared to those plotted in the paper due to small updates to the space--time approximation implementation.
+The output results from the four parameter problem are *slightly* different when compared to those plotted in the paper due to small updates to the space--time approximation implementation.
 
 The four parameter example is annotated below.
 
