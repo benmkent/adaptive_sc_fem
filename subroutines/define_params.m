@@ -14,7 +14,7 @@ params.k_shrink = 2;
 params.k_interp = 10;
 params.marking_factor = 0.1;
 params.letol_lofi = 1e-1; %default('LoFi Local Error Tolerance', 1e-1);
-params.dt0_lofi = params.dt0*1e1; %default('LoFi Local Error Tolerance', 1e-1);
+params.dt0_lofi = params.dt0; %default('LoFi Local Error Tolerance', 1e-1);
 
 params.letol = 1e-5; %default('Local Error Tolerance', 1e-4);
 params.test_level = 8; %default('Max test level', 5);
