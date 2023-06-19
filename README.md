@@ -80,6 +80,6 @@ The results are post processed into MATLAB figures and CSV files.
 ```matlab
 plot_data(data_table, reference,fem,params,problem)
 ```
-For example, resulting error estimate error and tolerance are output as the following figure.
+For example, the resulting error estimate, error and tolerance are output as the following figure.
 
 ![Error, error estimate and tolerance for four parameter test problem](https://github.com/benmkent/adaptive_sc_fem/assets/52756911/64a622f5-94c5-4305-9dba-b042fbaf37aa)
