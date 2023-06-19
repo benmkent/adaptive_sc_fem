@@ -66,7 +66,7 @@ params = define_params('l4-jomp');
 ```
 Approximation parameters can then be varied within the ```params``` structure.
 ```
-params.adapt_interp = 1; % Interpolate for new collocation points
+params.adapt_interp = 0; % Interpolate for new collocation points
 params.k_interp = 10; % c_{tol} safety factor
 params.marking_factor = 0.1; % Marking factor
 params.letol = 1e-5; % Local error tolerance
