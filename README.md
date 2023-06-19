@@ -6,6 +6,7 @@ To use the package ensure the path contains:
 - [IFISS 3.6](https://personalpages.manchester.ac.uk/staff/david.silvester/ifiss/)
 - [Sparse Grids MATLAB Kit 22-2 ("California")](https://sites.google.com/view/sparse-grids-kit)
 
+This can be achieved by downloading the approrpiate folders are ensuring the directories are placed within the ```adaptive_sc_fem/``` directory. 
 These specific versions are required. Function names in the more recent release of the Sparse Grids MATLAB Kit have not been updated and tested in this code yet.
 
 # Running the examples
