@@ -1,12 +1,10 @@
-%% Generate path
-addpath('./subroutines')
-addpath('./tools')
-addpath('./ifiss_modified')
-addpath('./sparse-grid')
-addpath('./bk')
+%% Set up path
+% The following directories need to be subdirectories of adaptive_sc_fem, 
+% or independently added to the MATLAB path:
+% /sparse-grids-matlab-kit_v-22-02_California
+% /ifiss3.6
 
-addpath(genpath('../ifiss3.6'))
-addpath(genpath('../sparse-grids-matlab-kit_v-22-02_California'))
+addpath(genpath(pwd),'-end')
 
 %% Define inputs
 if ~exist('problem','var')
@@ -45,7 +43,7 @@ fprintf('done (%f seconds)\n', toc())
 delta_t = params.t0;
 k_delta_t = 2;
 
-%% Initilaise datatable
+%% Initialise datatable
 data_table = write_to_data_table();
 %% Initialise figures
 axArray = initialise_figures();

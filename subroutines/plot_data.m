@@ -6,7 +6,7 @@ h(1) = figure(1);
 xy = fem.xy;
 % Set 4 plot times
 t_array = [0.1,1,10,100];
-% for ii = 1:4
+for ii = 1:4
 % %     % Find index and select data
 % %     ind_t = find([reference.data_table.t] >= t_array(ii) - eps,1);
 % %     t = reference.data_table{ind_t,'t'};
@@ -14,65 +14,76 @@ t_array = [0.1,1,10,100];
 % %     u = u{1};
 % %     I = reference.data_table{ind_t,'I'};
 % %     I = I{1};
-% %     Find index and select data
-%     ind_t = find([reference.reference_table.t] >= t_array(ii) - eps,1);
-%     t = reference.reference_table{ind_t,'t'};
-%     u = reference.reference_table{ind_t,'u'};
-%     u = u{1};
-%     I = reference.reference_table{ind_t,'I'};
-%     I = I{1};
-%     I_r = reduce_sparse_grid(I);
-%     C = get_mi_set(I);
-%     [~,C_star] = check_set_admissibility([C; sparse_grid_reduced_margin(C)]);
-%     C_star = unique(C_star,'rows');
-%     knot_fn = params.knot_fn;
-%     lev2knots = params.lev2knots;
-%     I_star = smolyak_grid_multiidx_set(C_star,knot_fn,lev2knots);
-%     I_star_r = reduce_sparse_grid(I_star);
-%     u_interpolated = interpolate_on_sparse_grid(I,I_r,u, I_star_r.knots);
+%     Find index and select data
+    ind_t = find([reference.data_table.t] >= t_array(ii) - eps,1);
+    t = reference.data_table{ind_t,'t'};
+    u = reference.data_table{ind_t,'u'};
+    u = u{1};
+    I = reference.data_table{ind_t,'I'};
+    I = I{1};
+    I_r = reduce_sparse_grid(I);
+    C = get_mi_set(I);
+    [~,C_star] = check_set_admissibility([C; sparse_grid_reduced_margin(C)]);
+    C_star = unique(C_star,'rows');
+    knot_fn = params.knot_fn;
+    lev2knots = params.lev2knots;
+    I_star = smolyak_grid_multiidx_set(C_star,knot_fn,lev2knots);
+    I_star_r = reduce_sparse_grid(I_star);
+    u_interpolated = interpolate_on_sparse_grid(I,I_r,u, I_star_r.knots);
 % %     
-% %     Calc exp and var
-%     exp_u = sum(u .* I_r.weights,2);
-%     exp_u2 = sum(u_interpolated.^2 .* I_star_r.weights,2);
-%     var_u = exp_u2 - exp_u.^2;
-%     var_u(var_u < 0) = 0;
-%     nx = sqrt(length(exp_u));
-%     [exp_u, x,y] = vec2xy(exp_u, fem);
-%     [var_u, x,y] = vec2xy(var_u, fem);
+%     Calc exp and var
+    exp_u = sum(u .* I_r.weights,2);
+    exp_u2 = sum(u_interpolated.^2 .* I_star_r.weights,2);
+    var_u = exp_u2 - exp_u.^2;
+    var_u(var_u < 0) = 0;
+    nx = sqrt(length(exp_u));
+    [exp_u, x,y] = vec2xy(exp_u, fem);
+    [var_u, x,y] = vec2xy(var_u, fem);
 % % 
-% %     Plot and write data
-% %     h(end+1)=figure;
-% %     contourf(x,y,exp_u);
-% %     title(num2str(t));
-% %     colorbar();
-% %     caxis([0,1]);
+%     Plot and write data
+    contourf(x,y,exp_u);
+    title(num2str(t));
+    colorbar();
+    caxis([0,1]);
+    h(end+1)=figure;
+    
 % %     matlab2tikz('filename',['exp' num2str(ii) '.tex']);
 %     writematrix([x(:),y(:), exp_u(:)],['exp_tab' num2str(ii) '.dat'],"Delimiter",",")
 %     writematrix([x(:),y(:), sqrt(var_u(:))],['stddev_tab' num2str(ii) '.dat'],'Delimiter',',')
 % % 
-% %     h(end+1)=figure;
-% %     contourf(x,y,sqrt(var_u));
-% %     title(num2str(t));
-% %     colorbar();
+    contourf(x,y,sqrt(var_u));
+    title(num2str(t));
+    colorbar();
+    h(end+1)=figure;
+
 % %     matlab2tikz('filename',['std' num2str(ii) '.tex']);
-% end
+end
 
 %% Plot data_table
 % Select only time indices in which there is no refinement.
 inds_valid = cellfun(@isempty,data_table{:,'pi_I_alpha'});
 
 %% Plot error components
-h(end+1) = figure();
-plot(data_table,'t','E','LineStyle',':','DisplayName','Threshold')
+% h(1) = figure(1);
+plot(data_table,'t','E','LineStyle',':','DisplayName','tol')
 hold on;
-plot(data_table,'t','pi','DisplayName','Est')
-plot(data_table,'t','pi_I','DisplayName','Interp')
-plot(data_table,'t','pi_I_delta','DisplayName','Corr')
-plot(data_table,'t','pi_delta','DisplayName','TS')
-plot(data_table{:,'t'},data_table{:,'pi_delta'}+data_table{:,'pi_I_delta'},'DisplayName','Corr+TS')
-plot(reference.data_table,'t','error','DisplayName','True');
+plot(data_table,'t','pi','DisplayName','\pi')
+plot(reference.data_table,'t','error','DisplayName','E^{adapt}');
 set(gca,'XScale','log','YScale','log');
 legend('show');
+xlabel('t');
+h(end+1) = figure();
+hold on;
+plot(data_table,'t','pi_I','DisplayName','\pi_I')
+plot(data_table,'t','pi_I_delta','DisplayName','\pi_{I,\delta}')
+plot(data_table,'t','pi_delta','DisplayName','\pi_{\delta}')
+plot(data_table,'t','E','LineStyle',':','DisplayName','tol')
+
+% plot(data_table{:,'t'},data_table{:,'pi_delta'}+data_table{:,'pi_I_delta'},'DisplayName','Corr+TS')
+% plot(reference.data_table,'t','error','DisplayName','True');
+set(gca,'XScale','log','YScale','log');
+legend('show');
+xlabel('t');
 hold off;
 %matlab2tikz('filename',['components.tex']);
 % writematrix([data_table{:,{'t','pi','pi_I','pi_I_delta','pi_delta'}}],'components-errorest.dat','Delimiter','space');
@@ -168,10 +179,10 @@ t_union = unique([reference.data_table{:,'t'};]); %data_table{:,'t'}]);
 
 error_union = interp1(reference.data_table{:,'t'}, reference.data_table{:,'error'}, t_union,'linear');
 est_union = interp1(data_table{inds_valid,'t'}, data_table{inds_valid,'pi'}, t_union,'linear');
-plot(t_union, est_union./error_union,'x');
+plot(t_union, est_union./error_union,'-x');
 set(gca,'XScale','log','YScale','log');
 est_union2 = interp1(data_table{inds_valid,'t'}, data_table{inds_valid,'pi_I'} + est_mean(inds_valid), t_union,'linear');
-plot(t_union, est_union2./error_union,'x');
+plot(t_union, est_union2./error_union,'-x');
 set(gca,'XScale','log','YScale','log');
 xlabel('t'),ylabel('Error Estimator Effectivity \nu')
 legend('Full','Simplified')
@@ -203,18 +214,21 @@ title('Adaptive SC timestep')
 h(end+1) = figure(); hold on; ax8 = gca(); cla();
 [dt_mean,dt_std, dt_min, dt_max] = plot_error_stats(ax8, data_table{:,'t'}, data_table{:,'dt_z'},[1,0,0]);
 xlabel('t'); ylabel('\delta t');
+legend('mean','mean+std','mean-std','min','max')
 set(ax8,'XScale','log','YScale','log');
 %matlab2tikz('filename',['timestepping-timesteps.tex']);
 title('TR-AB2 Timesteps')
 
 h(end+1) = figure; hold on;
-n_steps_approx = cumsum(sum(n_steps_in_super.*I_in_super,2,'omitnan'));
-n_steps_estimation = cumsum(sum(n_steps_in_super.*I_star_in_super,2,'omitnan') - sum(n_steps_in_super.*I_in_super,2,'omitnan'));
+n_steps_approx = (sum(n_steps_in_super.*I_in_super,2,'omitnan'));
+n_steps_estimation = (sum(n_steps_in_super.*I_star_in_super,2,'omitnan') - sum(n_steps_in_super.*I_in_super,2,'omitnan'));
 plot(data_table{:,'t'}, n_steps_approx);
 plot(data_table{:,'t'}, n_steps_estimation);
+plot(data_table{:,'t'}, n_steps_approx+n_steps_estimation);
 %matlab2tikz('filename',['cumulative-steps.tex']);
 xlabel('t');
 ylabel('n');
+set(gca,'XScale','log')%,'YScale','log');
 legend('n_{approx}','n_{estimation}')
 title('Culmulative timesteps')
 

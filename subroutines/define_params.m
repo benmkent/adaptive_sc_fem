@@ -111,7 +111,7 @@ if nargin == 1
             params.l_initial = 1;
             params.residual_est = 0;
             params.marking_factor = 0.1;
-            params.k_interp = 5;
+            params.k_interp = 10;
             %             params.knot_fn = @(n) knots_leja(n,-1,1,'line');
             %             params.lev2knots = @(level) lev2knots_lin(level);
         case 'smolyak-ref'
