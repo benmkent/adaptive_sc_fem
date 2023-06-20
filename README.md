@@ -82,4 +82,4 @@ plot_data(data_table, reference,fem,params,problem)
 ```
 For example, the resulting error estimate, error and tolerance are output as the following figure.
 
-![Error, error estimate and tolerance for four parameter test problem](https://github.com/benmkent/adaptive_sc_fem/assets/52756911/64a622f5-94c5-4305-9dba-b042fbaf37aa)
+![Error, error estimate and tolerance for four parameter test problem](https://github.com/benmkent/adaptive_sc_fem/assets/52756911/9fad03e2-e509-4dc6-ade1-5bdf35196259)
