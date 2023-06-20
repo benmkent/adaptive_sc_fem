@@ -43,6 +43,7 @@ if nargin == 1
         case 'l4-jomp'
             params.letol = 10^(-5);
             params.dt0 = 10^(-9);
+            params.dt0_lofi = 1e-8;
             params.adapt_interp = 1;
             params.grid = 'q1';
         case 'test-temporal-le1e-1'
