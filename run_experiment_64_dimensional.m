@@ -7,7 +7,7 @@
 addpath(genpath(pwd),'-end')
 
 %% Define problem
-problem = define_problem('doubleglazing-64');
+problem = define_problem('doubleglazing-64-rf');
 reference = define_reference('none');
 
 %% Run experiments
