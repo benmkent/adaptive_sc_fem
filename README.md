@@ -56,7 +56,7 @@ save(['reference.mat'],'reference','data_table','fem','problem','params', '-v7.3
 ```
 
 The approximation is then constructed.
-The reference approximation is specified to be precomputed and saved within the current folder (the ```test-folder`` option).
+The reference approximation is specified to be precomputed and saved within the current folder (the ```test-folder``` option).
 The parameters are set to the predefined set ```l4-jomp```.
 ```matlab
 %% Run experiments
