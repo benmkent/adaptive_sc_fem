@@ -46,56 +46,6 @@ if nargin == 1
             params.dt0_lofi = 1e-8;
             params.adapt_interp = 1;
             params.grid = 'q1';
-        case 'test-temporal-le1e-1'
-            params.letol = 10^(-1);
-            params.timestepping = 'stabtr';
-        case 'test-temporal-le1e-1.5'
-            params.letol = 10^(-1.5);
-            params.timestepping = 'stabtr';
-        case 'test-temporal-le1e-2'
-            params.letol = 10^(-2);
-            params.timestepping = 'stabtr';
-        case 'test-temporal-le1e-2.5'
-            params.letol = 10^(-2.5);
-            params.timestepping = 'stabtr';
-        case 'test-temporal-le1e-3'
-            params.letol = 10^(-3);
-            params.timestepping = 'stabtr';
-        case 'test-temporal-le1e-3.5'
-            params.letol = 10^(-3.5);
-            params.timestepping = 'stabtr';
-        case 'test-temporal-le1e-4'
-            params.letol = 10^(-4);
-            params.timestepping = 'stabtr';
-        case 'test-temporal-le1e-4.5'
-            params.letol = 10^(-4.5);
-            params.timestepping = 'stabtr';
-        case 'test-temporal-ref'
-            params.letol = 10^(-5);
-            params.timestepping = 'stabtr';
-            params.reference = 1;
-        case 'test-spatial-l1'
-            params.grid_param = 1;
-        case 'test-spatial-l2'
-            params.grid_param = 2;
-        case 'test-spatial-l3'
-            params.grid_param = 3;
-        case 'test-spatial-l4'
-            params.grid_param = 4;
-        case 'test-spatial-l5'
-            params.grid_param = 5;
-        case 'test-spatial-l6'
-            params.grid_param = 6;
-        case 'test-spatial-ref'
-            params.grid_param = 5;
-            params.reference = 1;
-        case 'test-interp-ref'
-            params.reference = 1;
-            params.letol = 10^(-5);
-            params.grid_param = 5;
-            params.l_initial = 4;
-            params.knot_fn = @(n) knots_leja(n,-1,1,'line');
-            params.lev2knots = @(level) lev2knots_lin(level);
         case 'test-interp'
             params.letol = 10^(-5);
             params.grid_param = 4;
@@ -104,7 +54,6 @@ if nargin == 1
             params.knot_fn = @(n) knots_leja(n,-1,1,'line');
             params.lev2knots = @(level) lev2knots_lin(level);
         case 'test-interp-jomp'
-            params.letol = 10^(-6);
             params.grid_param = 6;
             params.grid_type = 1;
             params.grid = 'q1';
@@ -112,9 +61,11 @@ if nargin == 1
             params.l_initial = 1;
             params.residual_est = 0;
             params.marking_factor = 0.1;
-            params.k_interp = 10;
-            %             params.knot_fn = @(n) knots_leja(n,-1,1,'line');
-            %             params.lev2knots = @(level) lev2knots_lin(level);
+            params.k_interp = 5;
+            params.plot = 1;
+            params.dt0=1e-2;
+            params.letol = 1e-6;
+            params.dt0_lofi=1e-1;
         case 'smolyak-ref'
             params.grid = 'q1';
             params.grid_param = 5; %default('Grid parameter',4);

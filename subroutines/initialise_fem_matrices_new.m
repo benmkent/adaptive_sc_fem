@@ -181,13 +181,13 @@ if problem.linear
             end
         case 'djs-rf'
             n_dim = problem.nWind;
-            cov = 5e0;
+            cov = 1e0;
 
             wind_fn{1} = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
 
             [wind_fn(2:(n_dim+1)), lambda, Vl, w_max, w_mean, xp, yp] = djs_wind_perturbation(n_dim,cov,7);
 
-            save('rf-construction','wind_fn','lambda','Vl','w_max','w_mean','xp','yp');
+%             save('rf-construction','wind_fn','lambda','Vl','w_max','w_mean','xp','yp');
 
             kk = n_dim+1;
         case 'xonly'

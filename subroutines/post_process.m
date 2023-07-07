@@ -101,34 +101,34 @@ if params.plot == 1
 %     [~,ind_max_level] = max(max_inds);
 %     
 %     [row,col] = find(mi == max_inds);
-    if isempty(J)
-    times_to_plot = params.plot_times(params.plot_times >= t-delta_t & params.plot_times < t);
-    data_1 = interp1(Z_I_star{ind(1)}.t_z,Z_I_star{ind(1)}.u_z.',times_to_plot(:));
-    data_2 = interp1(Z_I_star{ind(2)}.t_z,Z_I_star{ind(2)}.u_z.',times_to_plot(:));
-    data_3 = interp1(Z_I_star{ind(3)}.t_z,Z_I_star{ind(3)}.u_z.',times_to_plot(:));
-    data_4 = interp1(Z_I_star{ind(4)}.t_z,Z_I_star{ind(4)}.u_z.',times_to_plot(:));
-    writematrix([times_to_plot(:),data_1],'data1.dat','WriteMode','append');
-    writematrix([times_to_plot(:),data_2],'data2.dat','WriteMode','append');
-    writematrix([times_to_plot(:),data_3],'data3.dat','WriteMode','append');
-    writematrix([times_to_plot(:),data_4],'data4.dat','WriteMode','append');
-    end
-    for ii_t = 1:length(times_to_plot)
-        plot_surf(axSnap1,u_z_tplusdt(:,ind(1)),fem,params)
-        caxis(axSnap1,[0,1]);
-        title(axSnap1,['y=' num2str(z_tplusdt(1,ind(1))) ', t=' num2str(t)]);
-    
-        plot_surf(axSnap2,u_z_tplusdt(:,ind(2)),fem,params)
-        caxis(axSnap2,[0,1]);
-        title(axSnap2,['y=' num2str(z_tplusdt(1,ind(2))) ', t=' num2str(t)]);
-    
-        plot_surf(axSnap3,u_z_tplusdt(:,ind(3)),fem,params)
-        caxis(axSnap3,[0,1]);
-        title(axSnap3,['y=' num2str(z_tplusdt(1,ind(3))) ', t=' num2str(t)]);
-    
-        plot_surf(axSnap4,u_z_tplusdt(:,ind(4)),fem,params)
-        caxis(axSnap4,[0,1]);
-        title(axSnap4,['y=' num2str(z_tplusdt(1,ind(4))) ', t=' num2str(t)]);
-    end
+%     if isempty(J)
+%     times_to_plot = params.plot_times(params.plot_times >= t-delta_t & params.plot_times < t);
+%     data_1 = interp1(Z_I_star{ind(1)}.t_z,Z_I_star{ind(1)}.u_z.',times_to_plot(:));
+%     data_2 = interp1(Z_I_star{ind(2)}.t_z,Z_I_star{ind(2)}.u_z.',times_to_plot(:));
+%     data_3 = interp1(Z_I_star{ind(3)}.t_z,Z_I_star{ind(3)}.u_z.',times_to_plot(:));
+%     data_4 = interp1(Z_I_star{ind(4)}.t_z,Z_I_star{ind(4)}.u_z.',times_to_plot(:));
+%     writematrix([times_to_plot(:),data_1],'data1.dat','WriteMode','append');
+%     writematrix([times_to_plot(:),data_2],'data2.dat','WriteMode','append');
+%     writematrix([times_to_plot(:),data_3],'data3.dat','WriteMode','append');
+%     writematrix([times_to_plot(:),data_4],'data4.dat','WriteMode','append');
+%     for ii_t = 1:length(times_to_plot)
+%         plot_surf(axSnap1,u_z_tplusdt(:,ind(1)),fem,params)
+%         caxis(axSnap1,[0,1]);
+%         title(axSnap1,['y=' num2str(z_tplusdt(1,ind(1))) ', t=' num2str(t)]);
+%     
+%         plot_surf(axSnap2,u_z_tplusdt(:,ind(2)),fem,params)
+%         caxis(axSnap2,[0,1]);
+%         title(axSnap2,['y=' num2str(z_tplusdt(1,ind(2))) ', t=' num2str(t)]);
+%     
+%         plot_surf(axSnap3,u_z_tplusdt(:,ind(3)),fem,params)
+%         caxis(axSnap3,[0,1]);
+%         title(axSnap3,['y=' num2str(z_tplusdt(1,ind(3))) ', t=' num2str(t)]);
+%     
+%         plot_surf(axSnap4,u_z_tplusdt(:,ind(4)),fem,params)
+%         caxis(axSnap4,[0,1]);
+%         title(axSnap4,['y=' num2str(z_tplusdt(1,ind(4))) ', t=' num2str(t)]);
+%     end
+%     end
 
     if params.residual_estimator == 1
         for ii=1:size(fem.ev,1);
