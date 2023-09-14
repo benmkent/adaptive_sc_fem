@@ -32,6 +32,22 @@ switch varargin{1}
         problem.bc = 'hotwall';
         problem.tau = 1e-1;
         problem.f = 'zero';
+
+    case 'doubleglazing-onlyvardiff'
+        problem.linear = 1;
+        problem.wind_fn = 'recirculating';
+        problem.nWind = 0;
+        problem.sigmaWind = 0.5;
+
+        problem.diff_fn = 'scalar-var';
+        problem.viscosity = 1e-1;
+        problem.viscosity_var = 9e-2;
+        problem.nDiff = 1;
+
+        problem.bc = 'hotwall';
+        problem.tau = 1e-1;
+        problem.f = 'zero';
+
     case 'doubleglazing-timebc'
         problem.linear = 1;
         problem.wind_fn = 'recirculating-uncertain';

@@ -72,7 +72,11 @@ else
 %             F1 = scatteredInterpolant(fem.xy(:,1),fem.xy(:,2),U(:,ii_remesh));
 %             U_remesh(:,ii_remesh) = F1(fem_ref.xy(:,1),fem_ref.xy(:,2));
             if strcmp(params.grid,'p1')
-                U_remesh(:,ii_remesh) = scattered_interpolant_bk(fem.T, fem.xy, U(:,ii_remesh), fem_ref.xy(:,1),fem_ref.xy(:,2)); 
+                if params.reference == 1
+                    U_remesh = U;
+                else
+                    U_remesh(:,ii_remesh) = scattered_interpolant_bk(fem.T, fem.xy, U(:,ii_remesh), fem_ref.xy(:,1),fem_ref.xy(:,2));
+                end
             elseif strcmp(params.grid,'q1')
                 U_remesh(:,ii_remesh) = U(:,ii_remesh); %interp2(fem.xy(:,1),fem.xy(:,2), U(:,ii_remesh), fem_ref.xy(:,1),fem_ref.xy(:,2)); 
             else
@@ -123,7 +127,8 @@ end
 
 ref_data = [];
 for ii = 1:length(reference_times)
-    row = table(reference_times(ii), {squeeze(u_z_ref(:,:,ii))'}, {Iref}, ref_error(ii), ref_error_H(ii), {global_ts_error(ii,:)},{exp_u(:,ii)}, {std_u(:,ii)},'VariableNames',{'t','u','I','error','error_H','ts_error','exp','std'});
+    row = table(reference_times(ii), {squeeze(u_z_ref(:,:,ii))'}, {Iref}, ref_error(ii), ref_error_H(ii), {global_ts_error(ii,:)},{exp_u(:,ii)}, {std_u(:,ii)},...
+        'VariableNames',{'t','u','I','error','error_H','ts_error','exp','std'});
     ref_data = [ref_data; row];
 end
 

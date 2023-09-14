@@ -31,8 +31,8 @@ boundary_fix = boundary_fix * boundary_fix';
 %Cvar = exp(-(dist./corrL).^(1+delta));
 
 delta = 1; %problem.delta; % delta = 1;
-corrx = 1; %0.1; %2; % problem.corrx; %         corrx = 2;
-corry = 1; %0.1; %2; %problem.corry; %corry = 2;
+corrx = 1; %2; % problem.corrx; %         corrx = 2;
+corry = 1; %2; %problem.corry; %corry = 2;
 dist = sqrt((dx/corrx).^2 + (dy/corry).^2);
 clear dx dy;
 Cvar = exp(-dist.^(1+delta));

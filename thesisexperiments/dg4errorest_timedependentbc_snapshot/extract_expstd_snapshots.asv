@@ -1,0 +1,5 @@
+expmatrix = [reference.data_table.u{:}];
+stdmatrix = [reference.data_table.std{:}];
+tmatrix = [reference.data_table.t];
+
+writecell([{'t','n_approx','n_est','n_total'};num2cell([tmatrix(:), e])],'expstdsnapshot.dat');

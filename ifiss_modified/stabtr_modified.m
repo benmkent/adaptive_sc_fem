@@ -1,4 +1,4 @@
-function [DT,U,Udot,time,n ,nrej, dt, UDD] = stabtr(A,M,f,uzero,dtzero, t0, tfinal,tol,nstar,info, udd_old)
+function [DT,U,Udot,time,n ,nrej, dt, UDD] = stabtr(A,M,f,uzero,dtzero, t0, tfinal,tol,nstar,info, udd_old,flag_compressfinalstep)
 %STABTR  stabilised TR integrator for n-dimensional system of ODEs
 %   [DT,U,Udot,time] = stabtr(A,M,f,uzero,dtzero,tfinal,tol,10,0);
 %   input
@@ -65,7 +65,10 @@ UDD(:,1:2) = [udd_old, udd];
 flag = 0; nrej=0; avflag = 0;  nav=nstar; tstar=tfinal;
 
 %--------- loop until time limit is reached
-while t <= T  & flag==0
+while t < T  & flag==0
+    if t+dt > T && flag_compressfinalstep
+        dt = T- t;
+    end
     %if t+dt>T
     %    dt = T-t; flag = 1;
     %end                   % fix final time step
@@ -113,7 +116,7 @@ while t <= T  & flag==0
         if n==3
             udiff_out = udiff;
         end
-        DT(n) = dt; U(:,n) = u;  Udot(:,n) = udot; time(n) = t;UDD(:,n) = udd;
+        DT(n) = dt; U(:,n) = u;  Udot(:,n) = udot; time(n) = t;UDD(:,n) = udd; D(n) = d;
     else   % rejected step
         nrej = nrej + 1;
         if info==1, disp(['oops .. step ', int2str(n),' rejected']), end

@@ -1,0 +1,21 @@
+u_0 = 1;
+diffcnst = 0.1;
+a=1;
+
+t = logspace(-3,2,200);
+u = @(t,y) u_0 .* exp(-diffcnst * t)  .* exp(y * t);
+exp_u = @(t) u_0 .* exp(-diffcnst * t) .* sinc(t);
+var_u = @(t) u_0^2 .* exp(-2* diffcnst * t) .* (1- (sinc(t)).^2);
+
+%% Generate Colloc Pts
+n = lev2knots_doubling(1);
+[z,w] = knots_CC(n,-1,1,'prob');
+
+
+
+figure(1)
+plot(t,exp_u(t));
+set(gca,'XScale','log');
+figure(2)
+plot(t,var_u(t));
+set(gca,'XScale','log');

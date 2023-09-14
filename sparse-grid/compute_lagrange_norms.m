@@ -21,8 +21,11 @@ for ii = 1:I_r.size
 end
 fprintf('Compute the L1 norms for I\n');
 for ii = 1:I_r.size
-    interp_lagrange_poly = interpolate_on_sparse_grid(I, I_r, (sparse(1,ii,1,1,I_r.size)), gamma_pts_for_integration);
-    l1_norms_I(ii) = 1/size(gamma_pts_for_integration,2) * sum(abs(interp_lagrange_poly));
+%     interp_lagrange_poly = interpolate_on_sparse_grid(I, I_r, (sparse(1,ii,1,1,I_r.size)), gamma_pts_for_integration);
+%     l1_norms_I(ii) = 1/size(gamma_pts_for_integration,2) * sum(abs(interp_lagrange_poly));
+    % Identify the corresponding interpolation polynomials?
+    % Find rows that map to pt
+    l1_norms_I(ii) = abs(I_r.weights(ii));
 end
 % l2_norms_I(:,1) = sqrt(diag(Sr.L_prod));
 

@@ -9,7 +9,7 @@ switch params.grid
                 surf(ax,x, y, (u_reshape));
                 view(ax,params.plotview);
             case 'contourf'
-                contourf(ax,x, y, u_reshape);
+                contourf(ax,x, y, u_reshape,20);
         end
         colorbar(ax);
     case 'p1'

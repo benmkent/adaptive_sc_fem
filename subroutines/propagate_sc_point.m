@@ -42,7 +42,8 @@ if tplusdt > z_struct.t_z
         case 'stabtr'
         % Use modified stabtr algorithm
         %     [DT,U,Udot,time, n ,nrej, dt, UDD] = stabtr_modified(A,M,f,uzero(fem.notbound),dtzero,t0, tfinal,tol,nstar,info, w);
-        [DT,U,Udot,time, n ,nrej, dt, UDD] = stabtr_modified(Ax,Qx,fx,uzerox,dtzero,t0, tfinal,tol,nstar,info, w);
+        flag_compressfinalstep = 0; %params.residual_estimator;
+        [DT,U,Udot,time, n ,nrej, dt, UDD] = stabtr_modified(Ax,Qx,fx,uzerox,dtzero,t0, tfinal,tol,nstar,info, w,flag_compressfinalstep);
         
         case 'fixed'
             tol = inf;
@@ -62,7 +63,15 @@ if tplusdt > z_struct.t_z
 
     % Interpolate to give approx at time tplusdt;
     u_z_tplusdt = interp1(time, [U_with_bc(:,:)].',tplusdt).';
-    dt_z_tplusdt = interp1(time, [DT],tplusdt);
+    if params.residual_estimator ~= 1
+        dt_z_tplusdt = interp1(time, [DT],tplusdt);
+    else
+        if length(DT) > 1
+            dt_z_tplusdt = max(DT(end-1:end));
+        else
+            dt_z_tplusdt = DT(1);
+        end
+    end
 
     % Construct updated data structure
     z_struct_new = z_struct;

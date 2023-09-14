@@ -5,8 +5,8 @@ h(1) = figure(1);
 % Get xy grid
 xy = fem.xy;
 % Set 4 plot times
-t_array = [0.1,1,10,100];
-for ii = 1:4
+t_array = [0.1,1,10,60];
+for ii = []; %1:4
 % %     % Find index and select data
 % %     ind_t = find([reference.data_table.t] >= t_array(ii) - eps,1);
 % %     t = reference.data_table{ind_t,'t'};
@@ -123,7 +123,7 @@ for ii = 1:size(data_table,1)
     [~,inds_in_super,~,~] = compare_sparse_grids(I_super,I_super_r,I,I_r);
     I_in_super(ii,inds_in_super) = 1;
     ge_zero(ii) = ge_est_in_super(ii,inds_in_super(ii_zero_data(ii)));
-    
+    nsteps_zero(ii) = n_steps_in_super(ii,inds_in_super(ii_zero_data(ii)));
 %     J = data_table{ii,'J'};
 %     J = J{1};
 %     if ii==1
@@ -133,6 +133,7 @@ for ii = 1:size(data_table,1)
 %     end
     MI = get_mi_set(I);
     MI_max(ii,:) = max(MI,[],1);
+    MI_max_mod(ii,1) = max(sum(MI,2));
 end
 ge_ref_in_super = nan(size(reference.data_table,1),I_super_r.size);
 Iref_in_super = nan(size(reference.data_table,1),I_super_r.size);
@@ -243,7 +244,7 @@ title('Maximum multi-index level in each dimension')
 
 % disp(MI{end});
 
-savefig(h,'outputfigures.fig');
+% savefig(h,'outputfigures.fig');
 
 
 %%
@@ -348,9 +349,10 @@ writecell([{'t','error','est_union','est_simple','est_simple2','eff','eff_simple
 % writematrix([data_table{:,{'t'}}, dt_mean.',dt_std.', dt_min.', dt_max.', dt_std.'./dt_mean.'], 'timesteps.dat','Delimiter','space');
 writecell([{'t','mean','std','min','max','stdmean'}; num2cell([data_table{:,{'t'}}, dt_mean.',dt_std.', dt_min.', dt_max.', dt_std.'./dt_mean.'])], 'timesteps.dat','Delimiter','space');
 writematrix([data_table{inds_valid,'t'},MI_max(inds_valid,:)], 'max-mi.dat','Delimiter','space');
+writematrix([data_table{inds_valid,'t'},MI_max_mod(inds_valid,:)], 'max-mi-mod.dat','Delimiter','space');
 writematrix([data_table{:,'t'},data_table{:,'delta_t'}],'alg-timesteps.dat','Delimiter','space') 
 % writematrix([data_table{:,'t'}, n_steps_approx, n_steps_estimation, n_steps_approx + n_steps_estimation],'nsteps.dat','Delimiter','space');
-writecell([{'t','n_approx','n_est','n_total'};num2cell([data_table{:,'t'}, n_steps_approx, n_steps_estimation, n_steps_approx + n_steps_estimation])],...
+writecell([{'t','n_approx','n_est','n_total','n_zero'};num2cell([data_table{:,'t'}, n_steps_approx, n_steps_estimation, n_steps_approx + n_steps_estimation, nsteps_zero(:)])],...
     'nsteps.dat','Delimiter','space');
 % writematrix([data_table{:,'t'}, n_colloc_approx, n_colloc_estimation, n_colloc_approx+n_colloc_estimation],'ncolloc.dat','Delimiter','space');
 writecell([{'t','n_approx','n_est','n_total'}; num2cell([data_table{:,'t'}, n_colloc_approx, n_colloc_estimation, n_colloc_approx+n_colloc_estimation])],...
@@ -358,6 +360,8 @@ writecell([{'t','n_approx','n_est','n_total'}; num2cell([data_table{:,'t'}, n_co
 writematrix([refinement_times(:)],'refinement_times.dat','Delimiter','space');
 writematrix([refinement_inds],'refinement_inds.dat','Delimiter','space');
 writematrix([refinement_estimators],'refinement_estimators.dat','Delimiter','space');
+
+writematrix([MI.'],'MI_final.dat','Delimiter','space');
 end
 
 function [e_mean,e_std, e_min, e_max] = plot_error_stats(axHandle, time, errors,colour)
