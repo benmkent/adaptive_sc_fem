@@ -31,8 +31,6 @@ params.plottype = 'surf'; %'contourf'; % 'surf'; %
 params.plotview = [-40,60];
 params.plot_times = unique([logspace(-2,0,1e2), linspace(1,100,99e2+1)]);
 
-% params.vidlickova = 1;
-
 params.jomp_estimator = 1;
 params.residual_estimator = 0;
 
