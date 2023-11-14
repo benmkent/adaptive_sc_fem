@@ -1,5 +1,6 @@
 This is the code corresponding to the paper [Efficient Adaptive Stochastic Collocation Strategies for Advection-Diffusion Problems with Uncertain Inputs
 ](https://link.springer.com/article/10.1007/s10915-023-02247-w) ([Preprint](https://arxiv.org/abs/2210.03389)).
+
 This repository also contains code for the experiments contained within Benjamin M Kent's thesis at the University of Manchester.
 
 # Contents
@@ -34,7 +35,7 @@ The output results from the four parameter problem are *slightly* different when
 The four parameter example is annotated below.
 
 Firstly the path is set up.
-Folders containing ```ifiss3.6``` and ```sparse-grids-matlab-kit``` must be either be in the current directory, or added to the path by the user.
+Folders containing ```ifiss3.6```, ``tifiss1.2``` and ```sparse-grids-matlab-kit``` must be either be in the current directory, or added to the path by the user.
 ```matlab
 %% Set up path
 % The following directories need to be subdirectories of adaptive_sc_fem, 
@@ -95,4 +96,5 @@ For example, the resulting error estimate, error and tolerance are output as the
 
 # Running the thesis experiments
 The thesis experiments can be found within subfolders the folder ```thesisexperiments```. The folder names are representative of the experiments within.
+The path must be set up as described [above](#running-the-examples-for-the-paper).
 Examples in the thesis without dedicated folders are either easily recreated or the plotted data is derived from data generated in other experiments.
