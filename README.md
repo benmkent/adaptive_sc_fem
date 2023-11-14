@@ -2,12 +2,12 @@ This is the code corresponding to the paper [Efficient Adaptive Stochastic Collo
 ](https://link.springer.com/article/10.1007/s10915-023-02247-w) ([Preprint](https://arxiv.org/abs/2210.03389)).
 This repository also contains code for the experiments contained within Benjamin M Kent's thesis at the University of Manchester.
 
-#Contents
+# Contents
 - [Required MATLAB packages](#required-matlab-packages)
 - [Running the examples for the paper](#running-the-examples-for-the-paper)
 - [Running the thesis experiments](#running-the-thesis-experiments)
 
-#Required MATLAB packages
+# Required MATLAB packages
 To use the package ensure the path contains:
 - [IFISS 3.6](https://personalpages.manchester.ac.uk/staff/david.silvester/ifiss/)
 - [TIFISS 1.2](https://personalpages.manchester.ac.uk/staff/david.silvester/ifiss/tifiss.html)
@@ -16,7 +16,7 @@ To use the package ensure the path contains:
 This can be achieved by downloading the appropriate folders are ensuring the directories are placed within the ```adaptive_sc_fem/``` directory. 
 These specific versions are required. Function names in the more recent release of the Sparse Grids MATLAB Kit have not been updated and tested in this code yet.
 
-#Running the examples for the paper
+# Running the examples for the paper
 There are two examples included corresponding to the examples in [Efficient Adaptive Stochastic Collocation Strategies for Advection-Diffusion Problems with Uncertain Inputs
 ](https://link.springer.com/article/10.1007/s10915-023-02247-w).
 These are the scripts
@@ -93,6 +93,6 @@ For example, the resulting error estimate, error and tolerance are output as the
 
 ![Error, error estimate and tolerance for four parameter test problem](https://github.com/benmkent/adaptive_sc_fem/assets/52756911/9fad03e2-e509-4dc6-ade1-5bdf35196259)
 
-#Running the thesis experiments
+# Running the thesis experiments
 The thesis experiments can be found within subfolders the folder ```thesisexperiments```. The folder names are representative of the experiments within.
 Examples in the thesis without dedicated folders are either easily recreated or the plotted data is derived from data generated in other experiments.
