@@ -97,5 +97,28 @@ For example, the resulting error estimate, error and tolerance are output as the
 # Running the thesis experiments
 The thesis experiments can be found within subfolders the folder ```thesisexperiments```. The folder names are representative of the experiments within.
 The path must be set up as described [above](#running-the-examples-for-the-paper).
-Examples in the thesis without dedicated folders are either easily recreated or the plotted data is derived from data generated in other experiments.
+Examples in the thesis without dedicated folders are either easily recreated with the tools or the plotted data is derived from data generated in other experiments.
 The output ```*.mat``` files will generally need postprocessing with the ```subroutine/plot_data.m``` function.
+
+| Example                       | Folder / tool |
+| -------------                 | ------------- |
+| Motivational ODE example      |  ode (section 1.2) |
+| 2.1                           | ifiss3.6  |
+| 2.2 | sparse-grids-matlab-kit_v-22-02_California |
+| 2.3 | sparse-grids-matlab-kit_v-22-02_California |
+| 2.4 | ifiss3.6 |
+| 3.1 | dg4errorest (example 3.1) |
+| 3.2 | dg4errorest (example 3.1) (change params structure)|
+| 3.3 | dg4errorest_vardiffcnst (example 3.3)|
+| 3.4 | dg4errorest_timedependentbc (example 3.4)|
+| Fig 3.15  | change of basis from Lagrange polynomials to Legendre expansion using sparse-grids-matlab-kit_v-22-02_California |
+| 4.1 | Subset of the output data from Examples 4.2-4.4 |
+| 4.2 | dg_test_inputs_letol (example 4.1 and 4.2) |
+| 4.3 | dg_test_inputs_safety (example 4.3) |
+| 4.4 | dg_test_inputs_dorfler (example 4.4) |
+| 4.5 | dg_adaptive_vardiff (example 4.5) |
+| 4.6 | dg_adaptive_td (example 4.6) |
+| 4.7 | dg-rf (example 4.7) |
+| 5.1 | test_residual_est (examples 5)/test_spatial |
+| 5.2 | test_residual_est (examples 5)/test_temporal |
+| 5.3 | test_residual_est (examples 5)/test_interp |
