@@ -2,10 +2,9 @@
 addpath('./subroutines')
 addpath('./tools')
 addpath('./ifiss_modified')
-addpath('./verfurth/')
-addpath('./vidlickova/')
 addpath('./sparse-grid')
 addpath('./bk')
+addpath('./residual')
 
 addpath(genpath('../ifiss3.6'))
 addpath(genpath('../tifiss1.2'))
@@ -44,8 +43,6 @@ fprintf('done (%f seconds)\n', toc())
 fprintf('Initialise precomputed data (Lagrange product integrals)...'); tic();
 precompute = initialise_precomputed_data(I_star, I, params, problem);
 fprintf('done (%f seconds)\n', toc())
-
-error_vidlickova = initialise_vidlickova_error();
 
 delta_t = params.t0;
 k_delta_t = 2;
