@@ -1,5 +1,9 @@
 function [ mv, xy, bound, mbound, grid_type, outbc, x, y] = square_domain(square_type, nc, grid_type)
-%SQUARE_DOMAIN   square domain Q2 grid generator
+%SQUARE_DOMAIN Modified TIFISS function   
+% square domain Q2 grid generator
+%   Modified BMK 2022: no longers saves out to function or requests user
+%   inputs
+%
 %   square_domain(square_type, grid_reg);
 %   input
 %          square_type   1 for  [0,1]x[0,1]

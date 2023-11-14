@@ -1,6 +1,9 @@
 function [Sr] = sparse_grid_map_to_one_d_polynomials(S,Sr)
-
-%% We use expansion
+%sparse_grid_map_to_one_d_polynomials Maps each point in the full grid to
+%each sparse grid point with associated 1D polynomials.
+%
+% We will then use the expansion in all the polynomials (included repeated
+% points) to compute the norm as
 % (sum u_i L_i)^2 = sum(u_i^2 L_i^2) + 2 * sum_{i < j} u_i u_j L_i L_j
 
 % First collect all Lagrange polys with IDs and values

@@ -1,0 +1,390 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>stabtr_modified</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-09-27"><meta name="DC.source" content="stabtr_modified.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [DT,U,Udot,time,n ,nrej, dt, UDD] = stabtr(A,M,f,uzero,dtzero, t0, tfinal,tol,nstar,info, udd_old,flag_compressfinalstep)
+<span class="comment">%STABTR_MODIFIED  stabilised TR integrator for n-dimensional system of ODEs</span>
+<span class="comment">%   [DT,U,Udot,time] = stabtr(A,M,f,uzero,dtzero,tfinal,tol,10,0);</span>
+<span class="comment">%   input</span>
+<span class="comment">%          A, M      specified ODE system: M udot + A u = f without BCs</span>
+<span class="comment">%          uzero     initial condition</span>
+<span class="comment">%          dtzero    initial timestep</span>
+<span class="comment">%          tfinal    final time</span>
+<span class="comment">%          tol       local accuracy error tolerance</span>
+<span class="comment">%          nstar     averaging frequency</span>
+<span class="comment">%          info      output switch</span>
+<span class="comment">%          udd_old   carries through udd from previous approximations</span>
+<span class="comment">%          flag_compressfinalstep   Shortens final step so finishes at</span>
+<span class="comment">%          tfinal</span>
+<span class="comment">%   output</span>
+<span class="comment">%          DT        timestep history</span>
+<span class="comment">%          U         solution history</span>
+<span class="comment">%          Udot      solution time derivative history</span>
+<span class="comment">%          time      discrete time evolution</span>
+<span class="comment">%   X-IFISS function: DJS; 15 March 2018</span>
+<span class="comment">% Copyright (c) 2018 D.J. Silvester, Huining Yang</span>
+
+<span class="comment">%--------- setup</span>
+nmax=1e10;  <span class="comment">% maximum number of timesteps</span>
+ub=uzero; nd=length(ub);
+T=tfinal; dt0=dtzero;
+<span class="comment">%fprintf('StabTR iteration in %g dimensions ...',nd)</span>
+<span class="comment">% preallocate array dimensions</span>
+DT = zeros(1,10); U = zeros(nd,10); time = zeros(1,10); Udot = zeros(nd,10);
+UDD = zeros(nd,10);
+
+<span class="comment">%--------- initialization</span>
+udotb = M\(-A*ub+f(t0));                                <span class="comment">% du/dt(0)</span>
+ke = sqrt((ub'*(M*ub))); acc = sqrt((udotb'*(M*udotb)));
+itntable(nd,0,t0,0,ub,udotb,ke,acc)
+
+<span class="comment">%--------- first time step</span>
+v = (M+ 0.5*dt0*A)\(f(t0+dt0) + M*udotb - A*ub);               <span class="comment">% first TR step</span>
+<span class="comment">% v = (M+ 0.5*dt0*A)\(M*ub + 0.5*dt0*(f(t0) + f(t0+dt0) - A*ub));               % first TR step</span>
+u = ub + 0.5*dt0 *v;
+udot = 2*(u-ub)/dt0 - udotb;	                       <span class="comment">% du/dt(dt0)</span>
+udd = (udot-udotb)/dt0;		                           <span class="comment">% second derivative</span>
+t=t0 + dt0;
+r = norm(M*udot+A*u-(f(t)));
+ke = sqrt((u'*(M*u))); acc = sqrt((udot'*(M*udot)));
+itntable(nd,t,r,0,u,udot,ke,acc)
+
+<span class="keyword">if</span> ~isnan(udd_old)
+<span class="comment">%     u_tr = u;</span>
+<span class="comment">%     u_ab = ub + 1.5 * dt0 * udot - 0.5 *udotb;</span>
+<span class="comment">%     udiff = u_tr - u_ab;</span>
+    w =  udot + 0.5*dt0*udd_old;
+    udiff =  0.5*v-w;
+    d = (dt0*dt0/(3*(dt0+dt0)))*sqrt(abs(udiff'*M*udiff));
+    dt = (dt0*(tol/d)^(1/3));
+<span class="keyword">else</span>
+    udd_old = nan(nd,1);
+    dt = dt0;
+<span class="keyword">end</span>
+
+n=2;                                                   <span class="comment">% set time step index</span>
+DT(1:2) = [dt0, dt];
+U(:,1) = ub; U(:,2) = u;
+Udot(:,1) = udotb; Udot(:,2) = udot;
+time(1:2) = [t0,t0+dt0];
+UDD(:,1:2) = [udd_old, udd];
+
+flag = 0; nrej=0; avflag = 0;  nav=nstar; tstar=tfinal;
+
+<span class="comment">%--------- loop until time limit is reached</span>
+<span class="keyword">while</span> t &lt; T  &amp; flag==0
+    <span class="keyword">if</span> t+dt &gt; T &amp;&amp; flag_compressfinalstep
+        dt = T- t;
+    <span class="keyword">end</span>
+    <span class="comment">%if t+dt&gt;T</span>
+    <span class="comment">%    dt = T-t; flag = 1;</span>
+    <span class="comment">%end                   % fix final time step</span>
+    <span class="keyword">if</span> n==nmax, flag=1;
+        <span class="comment">%fprintf('\nToo slow -- step limit reached!'),</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">%   if condest(M+0.5*dt*A) &lt; 1e-18</span>
+    <span class="comment">%       fprintf(1,'dt = %.3e\n', dt);</span>
+    <span class="comment">%       pause(0.1);</span>
+    <span class="comment">%   end</span>
+
+    v = (M+0.5*dt*A)\(f(t+dt) + M*udot - A*u);                 <span class="comment">% general TR step</span>
+    w = udot + 0.5*dt*udd;                               <span class="comment">% AB2 step</span>
+    udiff =  0.5*v-w;
+    upTR  = u + 0.5*dt*v;
+    d = (dt*dt/(3*(dt+dt0)))*sqrt(abs(udiff'*M*udiff));
+
+    <span class="comment">% timestep control</span>
+    <span class="comment">%   if d &lt; ((1/0.7)^3)*tol*dt      % time step accepted</span>
+    <span class="keyword">if</span> d &lt; ((1/0.7)^3)*tol     <span class="comment">% time step accepted</span>
+        <span class="keyword">if</span> ((t&gt;tstar &amp; avflag==0) | ~rem(n,nav)) &amp;&amp; ~flag  <span class="comment">%%% smooth by averaging</span>
+            dt0 = 0.5*(dt+dt0);
+            ub  = 0.5*(u+ub);
+            udotb = 0.5*(udot+udotb);
+            u = 0.5*(u + upTR);
+            udot = 0.5*v;
+            t = t + 0.5*dt;
+            avflag=1;
+            <span class="keyword">if</span> nav == 1e4, nav = n; <span class="keyword">end</span>
+            <span class="keyword">if</span> info==1, disp([<span class="string">'Averaging: n = '</span> int2str(n) <span class="string">', t = '</span>,num2str(t)]), <span class="keyword">end</span>
+        <span class="keyword">else</span>                                   <span class="comment">%%% take regular step</span>
+            dt0 = dt; t = t+dt0;
+            ub = u; u = upTR;
+            udotb = udot; udot = v - udot;
+        <span class="keyword">end</span>
+        udd = (udot-udotb)/dt0;
+        r = norm(M*udot+ A*u-f(t));                      <span class="comment">% sanity check</span>
+        n=n+1;
+        <span class="keyword">if</span> n &gt; length(time)		                    <span class="comment">% allocate more memory</span>
+            DT   = [DT   zeros(1,100)];
+            U    = [U zeros(nd,100)];   Udot = [Udot zeros(nd,100)];
+            time = [time zeros(1,100)];
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> n==3
+            udiff_out = udiff;
+        <span class="keyword">end</span>
+        DT(n) = dt; U(:,n) = u;  Udot(:,n) = udot; time(n) = t;UDD(:,n) = udd; D(n) = d;
+    <span class="keyword">else</span>   <span class="comment">% rejected step</span>
+        nrej = nrej + 1;
+        <span class="keyword">if</span> info==1, disp([<span class="string">'oops .. step '</span>, int2str(n),<span class="string">' rejected'</span>]), <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% compute the next timestep</span>
+    dt = (dt*(tol/d)^(1/3));
+    ke = sqrt((u'*(M*u))); acc = sqrt((udot'*(M*udot)));
+    itntable(nd,t,r,d,u,udot,ke,acc)
+<span class="keyword">end</span>
+<span class="comment">%--------- end of timestep loop</span>
+
+
+<span class="comment">%--------- finishing touches</span>
+<span class="comment">%fprintf('finished in %3i steps!\n',n)</span>
+DT = DT(1:n); U = U(:,1:n); Udot = Udot(:,1:n); time = time(1:n); UDD = UDD(:,1:n);
+<span class="keyword">if</span> nrej&gt;0,
+    <span class="comment">%disp([int2str(nrej),' rejections in total: tol = ',num2str(tol)]),</span>
+<span class="keyword">end</span>
+
+<span class="comment">% BMK Calculate the next value of w to feed forward</span>
+<span class="comment">% w = udot + 0.5*dt*udd;                               % AB2 step</span>
+<span class="comment">% feed forward udotb to calculate next w</span>
+<span class="keyword">return</span>
+
+
+<span class="keyword">function</span> itntable(nd,t,r,d,u,udot,ke,acc)
+<span class="comment">% if nd==1,  % one-dimensional problem</span>
+<span class="comment">%    if t==0; fprintf('\n t          u           udot       d\n'),end</span>
+<span class="comment">%    fprintf(' %6.2e  %9.4e  %9.4e  %9.4e\n',t,u(1),udot(1),d)</span>
+<span class="comment">% end</span>
+<span class="comment">% if nd&gt;1,  % nd-dimensional problem</span>
+<span class="comment">% if t==0; fprintf('\n     t        ke         acc          d          res  \n'), end</span>
+<span class="comment">% fprintf(' %6.2e  %9.4e  %9.4e   %9.4e  %9.4e\n',t,ke,acc,d,r)</span>
+<span class="comment">% end</span>
+<span class="keyword">return</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [DT,U,Udot,time,n ,nrej, dt, UDD] = stabtr(A,M,f,uzero,dtzero, t0, tfinal,tol,nstar,info, udd_old,flag_compressfinalstep)
+%STABTR_MODIFIED  stabilised TR integrator for n-dimensional system of ODEs
+%   [DT,U,Udot,time] = stabtr(A,M,f,uzero,dtzero,tfinal,tol,10,0);
+%   input
+%          A, M      specified ODE system: M udot + A u = f without BCs
+%          uzero     initial condition
+%          dtzero    initial timestep
+%          tfinal    final time
+%          tol       local accuracy error tolerance
+%          nstar     averaging frequency
+%          info      output switch
+%          udd_old   carries through udd from previous approximations
+%          flag_compressfinalstep   Shortens final step so finishes at
+%          tfinal
+%   output
+%          DT        timestep history
+%          U         solution history
+%          Udot      solution time derivative history
+%          time      discrete time evolution
+%   X-IFISS function: DJS; 15 March 2018
+% Copyright (c) 2018 D.J. Silvester, Huining Yang
+
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- setup
+nmax=1e10;  % maximum number of timesteps
+ub=uzero; nd=length(ub);
+T=tfinal; dt0=dtzero;
+%fprintf('StabTR iteration in %g dimensions ...',nd)
+% preallocate array dimensions
+DT = zeros(1,10); U = zeros(nd,10); time = zeros(1,10); Udot = zeros(nd,10);
+UDD = zeros(nd,10);
+
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- initialization
+udotb = M\(-A*ub+f(t0));                                % du/dt(0)
+ke = sqrt((ub'*(M*ub))); acc = sqrt((udotb'*(M*udotb)));
+itntable(nd,0,t0,0,ub,udotb,ke,acc)
+
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- first time step
+v = (M+ 0.5*dt0*A)\(f(t0+dt0) + M*udotb - A*ub);               % first TR step
+% v = (M+ 0.5*dt0*A)\(M*ub + 0.5*dt0*(f(t0) + f(t0+dt0) - A*ub));               % first TR step
+u = ub + 0.5*dt0 *v;
+udot = 2*(u-ub)/dt0 - udotb;	                       % du/dt(dt0)
+udd = (udot-udotb)/dt0;		                           % second derivative
+t=t0 + dt0;
+r = norm(M*udot+A*u-(f(t)));
+ke = sqrt((u'*(M*u))); acc = sqrt((udot'*(M*udot)));
+itntable(nd,t,r,0,u,udot,ke,acc)
+
+if ~isnan(udd_old)
+%     u_tr = u;
+%     u_ab = ub + 1.5 * dt0 * udot - 0.5 *udotb;
+%     udiff = u_tr - u_ab;
+    w =  udot + 0.5*dt0*udd_old;
+    udiff =  0.5*v-w;
+    d = (dt0*dt0/(3*(dt0+dt0)))*sqrt(abs(udiff'*M*udiff));
+    dt = (dt0*(tol/d)^(1/3));
+else
+    udd_old = nan(nd,1);
+    dt = dt0;
+end
+
+n=2;                                                   % set time step index
+DT(1:2) = [dt0, dt];
+U(:,1) = ub; U(:,2) = u;
+Udot(:,1) = udotb; Udot(:,2) = udot;
+time(1:2) = [t0,t0+dt0];
+UDD(:,1:2) = [udd_old, udd];
+
+flag = 0; nrej=0; avflag = 0;  nav=nstar; tstar=tfinal;
+
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- loop until time limit is reached
+while t < T  & flag==0
+    if t+dt > T && flag_compressfinalstep
+        dt = T- t;
+    end
+    %if t+dt>T
+    %    dt = T-t; flag = 1;
+    %end                   % fix final time step
+    if n==nmax, flag=1;
+        %fprintf('\nToo slow REPLACE_WITH_DASH_DASH step limit reached!'),
+    end
+
+    %   if condest(M+0.5*dt*A) < 1e-18
+    %       fprintf(1,'dt = %.3e\n', dt);
+    %       pause(0.1);
+    %   end
+
+    v = (M+0.5*dt*A)\(f(t+dt) + M*udot - A*u);                 % general TR step
+    w = udot + 0.5*dt*udd;                               % AB2 step
+    udiff =  0.5*v-w;
+    upTR  = u + 0.5*dt*v;
+    d = (dt*dt/(3*(dt+dt0)))*sqrt(abs(udiff'*M*udiff));
+
+    % timestep control
+    %   if d < ((1/0.7)^3)*tol*dt      % time step accepted
+    if d < ((1/0.7)^3)*tol     % time step accepted
+        if ((t>tstar & avflag==0) | ~rem(n,nav)) && ~flag  %%% smooth by averaging
+            dt0 = 0.5*(dt+dt0);
+            ub  = 0.5*(u+ub);
+            udotb = 0.5*(udot+udotb);
+            u = 0.5*(u + upTR);
+            udot = 0.5*v;
+            t = t + 0.5*dt;
+            avflag=1;
+            if nav == 1e4, nav = n; end
+            if info==1, disp(['Averaging: n = ' int2str(n) ', t = ',num2str(t)]), end
+        else                                   %%% take regular step
+            dt0 = dt; t = t+dt0;
+            ub = u; u = upTR;
+            udotb = udot; udot = v - udot;
+        end
+        udd = (udot-udotb)/dt0;
+        r = norm(M*udot+ A*u-f(t));                      % sanity check
+        n=n+1;
+        if n > length(time)		                    % allocate more memory
+            DT   = [DT   zeros(1,100)];
+            U    = [U zeros(nd,100)];   Udot = [Udot zeros(nd,100)];
+            time = [time zeros(1,100)];
+        end
+        if n==3
+            udiff_out = udiff;
+        end
+        DT(n) = dt; U(:,n) = u;  Udot(:,n) = udot; time(n) = t;UDD(:,n) = udd; D(n) = d;
+    else   % rejected step
+        nrej = nrej + 1;
+        if info==1, disp(['oops .. step ', int2str(n),' rejected']), end
+    end
+
+    % compute the next timestep
+    dt = (dt*(tol/d)^(1/3));
+    ke = sqrt((u'*(M*u))); acc = sqrt((udot'*(M*udot)));
+    itntable(nd,t,r,d,u,udot,ke,acc)
+end
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- end of timestep loop
+
+
+%REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH- finishing touches
+%fprintf('finished in %3i steps!\n',n)
+DT = DT(1:n); U = U(:,1:n); Udot = Udot(:,1:n); time = time(1:n); UDD = UDD(:,1:n);
+if nrej>0,
+    %disp([int2str(nrej),' rejections in total: tol = ',num2str(tol)]),
+end
+
+% BMK Calculate the next value of w to feed forward
+% w = udot + 0.5*dt*udd;                               % AB2 step
+% feed forward udotb to calculate next w
+return
+
+
+function itntable(nd,t,r,d,u,udot,ke,acc)
+% if nd==1,  % one-dimensional problem
+%    if t==0; fprintf('\n t          u           udot       d\n'),end
+%    fprintf(' %6.2e  %9.4e  %9.4e  %9.4e\n',t,u(1),udot(1),d)
+% end
+% if nd>1,  % nd-dimensional problem
+% if t==0; fprintf('\n     t        ke         acc          d          res  \n'), end
+% fprintf(' %6.2e  %9.4e  %9.4e   %9.4e  %9.4e\n',t,ke,acc,d,r)
+% end
+return
+
+##### SOURCE END #####
+--></body></html>

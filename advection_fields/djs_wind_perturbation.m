@@ -1,5 +1,22 @@
-% n_rv = 64;
 function [wind_fn, lambda, Vl, w_max, w_mean, xp, yp] = djs_wind_perturbation(n_rv, cov, x_level)
+%DJS_WIND_PERTURBATION Generate n_rv wind fields through a streamd
+%function and fixed covariance function
+%   
+% Inputs
+%   n_rv        number of parameters
+%   cov         coefficient of variation
+%   x_level     level number for uniform, rectangular spatial mesh for
+%               computing stream function, 2^l x^l elements.
+% Outputs
+%   wind_fn     cell array of wind field functions
+%   lambda      computed eigenvalues for covariance function
+%   Vl          computed eigenvectors scaled by evalues
+%   w_max       approximation of maximum wind magnitude on domain
+%   w_mean      approximation of mean wind magnitude on domain
+%   xp          x grid for computing evalues and evectors
+%   yp          y grid for computing evalues and evectors
+
+
 % Ben (Catherine, for information)
 % As discussed yesterday I am attaching a bunch of m-files
 % Note that these are designed to work with Q2 approximation not Q1

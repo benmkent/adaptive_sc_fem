@@ -1,10 +1,13 @@
-function [mv, xy, bound, mbound, grid_type, outbc, x, y] = rsquare_domain(nc,grid_type);
-%RSQUARE_DOMAIN reference square domain Q2 grid generator
+function [mv, xy, bound, mbound, grid_type, outbc, x, y] = rsquare_domain_modified(nc,grid_type)
+%RSQUARE_DOMAIN_MODEIFIED Modified IFISS routine
+%   reference square domain Q2 grid generator
 %   rsquare_domain;
+%   This has been converted into a function by BMK, 2022.
 % 
 % grid defining data is saved to the file: square_grid.mat
 %   IFISS function: DJS; 1 April 2015.
-% Copyright (c) 2005 D.J. Silvester, H.C. Elman, A. Ramage 
+% Copyright (c) 2005 D.J. Silvester, H.C. Elman, A. Ramage
+
 fprintf('\n\nGrid generation for unit square  domain.\n')
 % nc=default('grid parameter: 3 for underlying 8x8 grid (default is 16x16)',4);
 if nc<2, error('illegal parameter choice, try again.'), end

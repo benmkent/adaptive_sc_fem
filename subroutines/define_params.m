@@ -37,6 +37,8 @@ params.residual_estimator = 0;
 params.simplified_estimator = false;
 params.reference = 0;
 
+params.adapt_type = 'residual';
+
 if nargin == 1
     params.plot = 0;
     switch varargin{1}

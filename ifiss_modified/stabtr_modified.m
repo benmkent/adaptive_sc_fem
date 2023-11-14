@@ -1,5 +1,5 @@
 function [DT,U,Udot,time,n ,nrej, dt, UDD] = stabtr(A,M,f,uzero,dtzero, t0, tfinal,tol,nstar,info, udd_old,flag_compressfinalstep)
-%STABTR  stabilised TR integrator for n-dimensional system of ODEs
+%STABTR_MODIFIED  stabilised TR integrator for n-dimensional system of ODEs
 %   [DT,U,Udot,time] = stabtr(A,M,f,uzero,dtzero,tfinal,tol,10,0);
 %   input
 %          A, M      specified ODE system: M udot + A u = f without BCs
@@ -9,6 +9,9 @@ function [DT,U,Udot,time,n ,nrej, dt, UDD] = stabtr(A,M,f,uzero,dtzero, t0, tfin
 %          tol       local accuracy error tolerance
 %          nstar     averaging frequency
 %          info      output switch
+%          udd_old   carries through udd from previous approximations
+%          flag_compressfinalstep   Shortens final step so finishes at
+%          tfinal
 %   output
 %          DT        timestep history
 %          U         solution history
@@ -27,18 +30,18 @@ DT = zeros(1,10); U = zeros(nd,10); time = zeros(1,10); Udot = zeros(nd,10);
 UDD = zeros(nd,10);
 
 %--------- initialization
-udotb = M\(-A*ub+f(t0));                                % du/dt(0)
+udotb = M\(-A*ub+0.5*(f(t0)+f(t0+dt0)));                                % du/dt(0)
 ke = sqrt((ub'*(M*ub))); acc = sqrt((udotb'*(M*udotb)));
 itntable(nd,0,t0,0,ub,udotb,ke,acc)
 
 %--------- first time step
-v = (M+ 0.5*dt0*A)\(f(t0+dt0) + M*udotb - A*ub);               % first TR step
+v = (M+ 0.5*dt0*A)\(0.5*(f(t0)+f(t0+dt0)) + M*udotb - A*ub);               % first TR step
 % v = (M+ 0.5*dt0*A)\(M*ub + 0.5*dt0*(f(t0) + f(t0+dt0) - A*ub));               % first TR step
 u = ub + 0.5*dt0 *v;
 udot = 2*(u-ub)/dt0 - udotb;	                       % du/dt(dt0)
 udd = (udot-udotb)/dt0;		                           % second derivative
 t=t0 + dt0;
-r = norm(M*udot+A*u-(f(t)));
+r = norm(M*udot+A*u-(0.5*(f(t0)+f(t0+dt0)) ));
 ke = sqrt((u'*(M*u))); acc = sqrt((udot'*(M*udot)));
 itntable(nd,t,r,0,u,udot,ke,acc)
 
@@ -81,7 +84,7 @@ while t < T  & flag==0
     %       pause(0.1);
     %   end
 
-    v = (M+0.5*dt*A)\(f(t+dt) + M*udot - A*u);                 % general TR step
+    v = (M+0.5*dt*A)\(0.5*(f(t)+f(t+dt)) + M*udot - A*u);                 % general TR step
     w = udot + 0.5*dt*udd;                               % AB2 step
     udiff =  0.5*v-w;
     upTR  = u + 0.5*dt*v;
@@ -106,7 +109,7 @@ while t < T  & flag==0
             udotb = udot; udot = v - udot;
         end
         udd = (udot-udotb)/dt0;
-        r = norm(M*udot+ A*u-f(t));                      % sanity check
+        r = norm(M*udot+ A*u-0.5*(f(t) + f(t-dt0)) );                      % sanity check
         n=n+1;
         if n > length(time)		                    % allocate more memory
             DT   = [DT   zeros(1,100)];

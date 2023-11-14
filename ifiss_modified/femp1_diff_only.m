@@ -1,4 +1,6 @@
 function [a, h] = femp1_diff_only(xy,evt, a_fn)
+%FEMP1_DIFF_ONLY set up linear anisotropic diffusion matrices for P1 mesh.
+% Based upon TIFISS code.
 %FEMP1_DIFF  set up linear anisotropic diffusion matrices
 %   [A,Q,f,Ae,Qe] = femp1_diff(xy,evt);
 %   input

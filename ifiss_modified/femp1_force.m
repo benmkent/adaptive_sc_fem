@@ -1,9 +1,13 @@
 function [f] = femp1_force(xy,ev, f_fn)
+%FEMP1_FORCE constructs the forcing vector from a forcing function f_fn
+%
+% Builds upon the TIFISS function
 %FEMQ1_DIFF vectorized bilinear coefficient matrix generator
 %   [A,Q,f] = femq1_diff(xy,ev);
 %   input
 %          xy         vertex coordinate vector
 %          ev         element mapping matrix
+%          f_fn       forcing function to be evaluated.
 %   output
 %          f          f vector
 %

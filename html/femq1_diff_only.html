@@ -1,0 +1,247 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>femq1_diff_only</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-09-27"><meta name="DC.source" content="femq1_diff_only.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [a, h] = femq1_diff_only(xy,ev, a_fn)
+<span class="comment">%femq1_diff_only Modified formulatuion of FEMQ1_DIFF IFISS function to</span>
+<span class="comment">%formualte diffusion matrix only using diffusion tensor to allow</span>
+<span class="comment">% anisotropic diffusion.</span>
+<span class="comment">%</span>
+<span class="comment">% FEMQ1_DIFF vectorized bilinear coefficient matrix generator</span>
+<span class="comment">%   [A,Q,f] = femq1_diff(xy,ev);</span>
+<span class="comment">%   input</span>
+<span class="comment">%          xy         vertex coordinate vector</span>
+<span class="comment">%          ev         element mapping matrix</span>
+<span class="comment">%   output</span>
+<span class="comment">%          A          stiffness matrix</span>
+<span class="comment">%          Q          mass matrix</span>
+<span class="comment">%          f          rhs vector</span>
+<span class="comment">%</span>
+<span class="comment">%   Natural boundary conditions apply. Dirichlet conditions</span>
+<span class="comment">%   must be explicitly enforced by calling function nonzerobc.</span>
+<span class="comment">%   IFISS function: DJS; 4 March 2005.</span>
+<span class="comment">% Copyright (c) 2005 D.J. Silvester, H.C. Elman, A. Ramage</span>
+x=xy(:,1); y=xy(:,2);
+nvtx=length(x);
+nel=length(ev(:,1));
+lx=max(x)-min(x); ly=max(y)-min(y);
+hx=max(diff(x)); hy=max(diff(y));
+fprintf(<span class="string">'setting up Q1 diffusion matrices...  '</span>)
+<span class="comment">%</span>
+<span class="comment">% initialise global matrices</span>
+a = sparse(nvtx,nvtx);
+h = sparse(nvtx,nvtx);
+<span class="comment">%</span>
+<span class="comment">% set up 2x2 Gauss points</span>
+gpt=1.0e0/sqrt(3.0e0);
+s(1) = -gpt;  t(1) = -gpt;
+s(2) =  gpt;  t(2) = -gpt;
+s(3) =  gpt;  t(3) =  gpt;
+s(4) = -gpt;  t(4) =  gpt;
+<span class="comment">%</span>
+<span class="comment">% inner loop over elements</span>
+<span class="keyword">for</span> ivtx = 1:4
+    xl_v(:,ivtx) = x(ev(:,ivtx));
+    yl_v(:,ivtx) = y(ev(:,ivtx));
+<span class="keyword">end</span>
+ae = zeros(nel,4,4);
+he = zeros(nel,4,4);
+<span class="comment">%  loop over 2x2 Gauss points</span>
+<span class="keyword">for</span> igpt = 1:4
+    sigpt=s(igpt);
+    tigpt=t(igpt);
+    <span class="comment">%  evaluate derivatives etc</span>
+    [jac,invjac,phi,dphidx,dphidy] = deriv(sigpt,tigpt,xl_v,yl_v);
+
+    nel=length(xl_v(:,1));
+    zero_v = zeros(nel,1); xx=zero_v; yy=xx;
+    [phi_e,dphids,dphidt] = shape(sigpt,tigpt);
+    <span class="keyword">for</span> ivtx=1:4
+        xx = xx + phi_e(ivtx) * xl_v(:,ivtx);
+        yy = yy + phi_e(ivtx) * yl_v(:,ivtx);
+    <span class="keyword">end</span>
+
+    <span class="keyword">for</span> ii = 1:nel
+        diff_mat = a_fn(xx(ii),yy(ii));
+
+        <span class="keyword">for</span> j = 1:4
+            <span class="keyword">for</span> i = 1:4
+                ae(ii,i,j) = ae(ii,i,j)  + diff_mat(1) .* dphidx(ii,i).*dphidx(ii,j) .* invjac(ii);
+                ae(ii,i,j) = ae(ii,i,j)  + diff_mat(2) .* dphidx(ii,i).*dphidy(ii,j) .* invjac(ii);
+                ae(ii,i,j) = ae(ii,i,j)  + diff_mat(3) .* dphidy(ii,i).*dphidx(ii,j) .* invjac(ii);
+                ae(ii,i,j) = ae(ii,i,j)  + diff_mat(4) .* dphidy(ii,i).*dphidy(ii,j) .* invjac(ii);
+                he(ii,i,j) = he(ii,i,j)  + dphidx(ii,i) .* dphidx(ii,j) .* invjac(ii);
+                he(ii,i,j) = he(ii,i,j)  + dphidy(ii,i) .* dphidy(ii,j) .* invjac(ii);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="comment">% end of Gauss point loop</span>
+<span class="keyword">end</span>
+<span class="comment">% perform assembly of global matrix  and source vector</span>
+<span class="keyword">for</span> krow=1:4
+    nrow=ev(:,krow);
+    <span class="keyword">for</span> kcol=1:4
+        ncol=ev(:,kcol);
+        a = a + sparse(nrow,ncol,ae(:,krow,kcol),nvtx,nvtx);
+        h = h + sparse(nrow,ncol,he(:,krow,kcol),nvtx,nvtx);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">%</span>
+<span class="keyword">return</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [a, h] = femq1_diff_only(xy,ev, a_fn)
+%femq1_diff_only Modified formulatuion of FEMQ1_DIFF IFISS function to
+%formualte diffusion matrix only using diffusion tensor to allow 
+% anisotropic diffusion.
+%
+% FEMQ1_DIFF vectorized bilinear coefficient matrix generator
+%   [A,Q,f] = femq1_diff(xy,ev);
+%   input
+%          xy         vertex coordinate vector
+%          ev         element mapping matrix
+%   output
+%          A          stiffness matrix
+%          Q          mass matrix
+%          f          rhs vector
+%
+%   Natural boundary conditions apply. Dirichlet conditions
+%   must be explicitly enforced by calling function nonzerobc.
+%   IFISS function: DJS; 4 March 2005.
+% Copyright (c) 2005 D.J. Silvester, H.C. Elman, A. Ramage
+x=xy(:,1); y=xy(:,2);
+nvtx=length(x);
+nel=length(ev(:,1));
+lx=max(x)-min(x); ly=max(y)-min(y);
+hx=max(diff(x)); hy=max(diff(y));
+fprintf('setting up Q1 diffusion matrices...  ')
+%
+% initialise global matrices
+a = sparse(nvtx,nvtx);
+h = sparse(nvtx,nvtx);
+%
+% set up 2x2 Gauss points
+gpt=1.0e0/sqrt(3.0e0);
+s(1) = -gpt;  t(1) = -gpt;
+s(2) =  gpt;  t(2) = -gpt;
+s(3) =  gpt;  t(3) =  gpt;
+s(4) = -gpt;  t(4) =  gpt;
+%
+% inner loop over elements
+for ivtx = 1:4
+    xl_v(:,ivtx) = x(ev(:,ivtx));
+    yl_v(:,ivtx) = y(ev(:,ivtx));
+end
+ae = zeros(nel,4,4);
+he = zeros(nel,4,4);
+%  loop over 2x2 Gauss points
+for igpt = 1:4
+    sigpt=s(igpt);
+    tigpt=t(igpt);
+    %  evaluate derivatives etc
+    [jac,invjac,phi,dphidx,dphidy] = deriv(sigpt,tigpt,xl_v,yl_v);
+
+    nel=length(xl_v(:,1));
+    zero_v = zeros(nel,1); xx=zero_v; yy=xx;
+    [phi_e,dphids,dphidt] = shape(sigpt,tigpt);
+    for ivtx=1:4
+        xx = xx + phi_e(ivtx) * xl_v(:,ivtx);
+        yy = yy + phi_e(ivtx) * yl_v(:,ivtx);
+    end
+    
+    for ii = 1:nel
+        diff_mat = a_fn(xx(ii),yy(ii));
+
+        for j = 1:4
+            for i = 1:4
+                ae(ii,i,j) = ae(ii,i,j)  + diff_mat(1) .* dphidx(ii,i).*dphidx(ii,j) .* invjac(ii);
+                ae(ii,i,j) = ae(ii,i,j)  + diff_mat(2) .* dphidx(ii,i).*dphidy(ii,j) .* invjac(ii);
+                ae(ii,i,j) = ae(ii,i,j)  + diff_mat(3) .* dphidy(ii,i).*dphidx(ii,j) .* invjac(ii);
+                ae(ii,i,j) = ae(ii,i,j)  + diff_mat(4) .* dphidy(ii,i).*dphidy(ii,j) .* invjac(ii);
+                he(ii,i,j) = he(ii,i,j)  + dphidx(ii,i) .* dphidx(ii,j) .* invjac(ii);
+                he(ii,i,j) = he(ii,i,j)  + dphidy(ii,i) .* dphidy(ii,j) .* invjac(ii);
+            end
+        end
+    end
+    % end of Gauss point loop
+end
+% perform assembly of global matrix  and source vector
+for krow=1:4
+    nrow=ev(:,krow);
+    for kcol=1:4
+        ncol=ev(:,kcol);
+        a = a + sparse(nrow,ncol,ae(:,krow,kcol),nvtx,nvtx);
+        h = h + sparse(nrow,ncol,he(:,krow,kcol),nvtx,nvtx);
+    end
+end
+%
+return
+
+
+##### SOURCE END #####
+--></body></html>

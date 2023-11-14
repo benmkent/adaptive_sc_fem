@@ -1,4 +1,7 @@
 function axArray = initialise_figures()
+%INITIALISE_FIGURES Constructs stcture of figure handles
+% Output    axArray     Structure of axes for plotting.
+
 figExp = figure(1); axArray.axExp = gca(figExp);
 figStd = figure(2); axArray.axStd = gca(figStd);
 figError = figure(3); axArray.axError = gca(figError);

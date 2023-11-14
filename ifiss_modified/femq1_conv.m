@@ -1,5 +1,9 @@
 function [n, xl_v, yl_v,flowx, flowy] = femq1_conv(xy,ev, wind_fn)
-%FEMQ1_CD vectorized bilinear coefficient matrix generator
+%FEMQ1_conv modified vectorized bilinear coefficient matrix generator
+% This function is based on FEMQ1_CD from IFISS
+%
+% BMK 2022
+%
 %    [N] = femq1_cd(xy,ev);
 %   input
 %          xy       vertex coordinate vector
@@ -89,5 +93,6 @@ for krow=1:4
     end
 end
 
+%% Note this enforces skew symmetry!!!
 n = 0.5*(n - n.');
 return

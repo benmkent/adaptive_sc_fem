@@ -1,19 +1,21 @@
-function [eta_t_z,eta_t_k_z, eta_t_z_du, eta_t_z_u_w, eta_t_z_eta_w] = compute_temporal_errors_new(z, fem,tr,trp1)
-theta = 0.5;
-epsilon = fem.lambda;
-r = 0;
+function [eta_t_z,eta_t_k_z, eta_t_z_du, eta_t_z_u_w, eta_t_z_eta_w] = compute_temporal_errors(z, fem,tr,trp1)
+%COMPUTE_TEMPORAL_ERRORS Computes temporal error estimators
+%
+% Inputs    z       data structure for a collocation point
+%           fem     data structure for FEM approximation
+%           tr      time interval start
+%           trp1    time interval end
+%
+% Outputs   eta_z   spatial error estimator
+%           eta_z_T localised spatial error estimator on elements
 
-hx = fem.hx;
-hy = fem.hy;
-eex = fem.eex;
+%% Set up problem
+theta = 0.5;
 xy = fem.xy;
 ev = fem.ev;
 ebound = fem.ebound;
-tve = fem.tve;
-
 stiffness = fem.stiffness;
 mass = fem.mass;
-
 bound = fem.bound;
 notbound = fem.notbound;
 
@@ -35,7 +37,7 @@ fx = @(t) S *f - A(notbound,bound)*bc(t) - Q(notbound,bound)*bc_prime(t);
 f_K(bound) = 0;
 
 %% Set up local error problems
-% Computing edge lenghts/connections
+% Computing edge lengths/connections
 evt = ev;
 [eex,tve,els] = tedgegen(xy,evt);
 eboundt = ebound;
@@ -50,18 +52,16 @@ U(bound,:) = 0;
 % Loop over timesteps
 for ii_k = 1 : (n_k-1)
     dt_k = DT(ii_k+1);
-    dtU(:,ii_k) = dt_k^(-1) * (U(:,ii_k+1) - U(:,ii_k));
-    thetaU(:,ii_k) = theta*U(:,ii_k+1)+ (1-theta)*U(:,ii_k);
     dU(:,ii_k) = (U(:,ii_k+1) - U(:,ii_k));
 
     % Hard code BC fn
     thetaT = theta * time(ii_k+1)+ (1-theta) * time(ii_k);
     bc_fn = @(x1,x2) (1-exp(-10*thetaT))*(1-x2.^4).*(abs(x1-1) < 1e-6);
 
-    % Compute \Vert \nabla (Ukp1 - Uk) \Vert_H1
+    % Compute $\Vert \nabla (Ukp1 - Uk) \Vert_{H1}$
     dU_k_z(ii_k) = sqrt(dU(:,ii_k).' * mass * dU(:,ii_k));
 
-    % Compute solution to (u,v)_H^1 = ( w \dot dU , v)_H^{-1}
+    % Compute solution to (u,v)_H^1_0 = ( w \dot dU , v)_H^{-1}
     u_w_k_z(notbound,ii_k) = stiffness(notbound,notbound) \ N(notbound,notbound) * dU(notbound,ii_k);
     u_w_k_z_normed(ii_k) = sqrt(u_w_k_z(:,ii_k).' * stiffness  * u_w_k_z(:,ii_k));
 
@@ -76,10 +76,9 @@ for ii_k = 1 : (n_k-1)
     errest(ii_k) = norm(elerr,2);
 
     eta_t_k_z(ii_k) = sqrt(dU_k_z(ii_k)^2 + u_w_k_z_normed(ii_k)^2 + errest(ii_k)^2);
-
 end
 
-% adjust 1/12 factor for end points
+%% Adjust 1/12 factor for end points (possible partial integration over time intervals)
 if length(time)>2
     t_integral = (1/12).*DT(2:end);
     t_integral(1) = t_integral(1) - (0.25*(tr-time(1)) - 0.5*(DT(2)^-1) * (tr - time(1))^2+ 1/3 * (DT(2))^-2 * (tr - time(1))^3);
@@ -89,6 +88,7 @@ else
         (0.25*(tr-time(1)) - 0.5*(DT(2)^-1) * (tr - time(1))^2+ 1/3 * (DT(2))^-2 * (tr - time(1))^3);
 end
 
+%% Compute total estimator
 eta_t_z_du = sqrt(sum(dU_k_z(:).^2 .*t_integral));
 eta_t_z_u_w = sqrt(sum(u_w_k_z_normed(:).^2 .*t_integral));
 eta_t_z_eta_w = sqrt(sum(errest(:).^2 .*t_integral));

@@ -1,9 +1,13 @@
 function [f] = femq1_force(xy,ev, f_fn)
+%femq1_force Construct Q1 forcing function
+%
+% Based upon the IFISS function:
 %FEMQ1_DIFF vectorized bilinear coefficient matrix generator
 %   [A,Q,f] = femq1_diff(xy,ev);
 %   input
 %          xy         vertex coordinate vector
 %          ev         element mapping matrix
+%          f_fn       forcing function
 %   output
 %          f          f vector
 %

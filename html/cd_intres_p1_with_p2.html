@@ -1,0 +1,304 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>cd_intres_p1_with_p2</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-09-27"><meta name="DC.source" content="cd_intres_p1_with_p2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [intres] = cd_intres_p1_with_p2(xy,evt,p1sol, p1timederiv, w_fn)
+<span class="comment">%INTRES_P1_WITH_P2 interior residuals for P1 solution using P2 bubble functions</span>
+<span class="comment">%</span>
+<span class="comment">%   [intres] = cd_intres_p1_with_p2(xy,xl_s,yl_s,evt,p1sol)</span>
+<span class="comment">%</span>
+<span class="comment">%   input:</span>
+<span class="comment">%          xy         vertex coordinate vector</span>
+<span class="comment">%          evt        element mapping matrix</span>
+<span class="comment">%          p1sol      vertex solution vector</span>
+<span class="comment">%          p1timederiv      vertex solution vector time derivative</span>
+<span class="comment">%</span>
+<span class="comment">%   output:</span>
+<span class="comment">%          intres     interior residuals</span>
+<span class="comment">%</span>
+<span class="comment">% Function(s) called: triangular_gausspoints</span>
+<span class="comment">%                     tgauss_gradcoeff</span>
+<span class="comment">%                     tgauss_source</span>
+<span class="comment">%</span>
+<span class="comment">% See also INTRES_P1_WITH_P1</span>
+<span class="comment">%</span>
+<span class="comment">% Last update: 01/02/2017</span>
+<span class="comment">% -------------------------------------------------------------------------</span>
+<span class="comment">%    TIFISS function:</span>
+<span class="comment">% Copyright (c) 2017 Alex Bespalov, Leonardo Rocchi, modifed BMK 2023</span>
+
+x = xy(:,1);
+y = xy(:,2);
+nel = length(evt(:,1));
+
+<span class="comment">% Recover local coordinates and local solution</span>
+<span class="keyword">for</span> ivtx = 1:3
+    xl_v(:,ivtx) = x(evt(:,ivtx));
+    yl_v(:,ivtx) = y(evt(:,ivtx));
+    sl_v(:,ivtx) = p1sol(evt(:,ivtx));
+    sldt_v(:,ivtx) = p1timederiv(evt(:,ivtx));
+<span class="keyword">end</span>
+
+<span class="comment">% Construct 2D gaussian rule over the reference triangle</span>
+nngpt = 7;
+[s,t,wt] = triangular_gausspoints(nngpt);
+
+<span class="comment">% Preallocate matrices</span>
+intres = zeros(nel,4);
+bde = zeros(nel,4,3);
+fde = zeros(nel,4);
+
+<span class="comment">% Loop over Gauss points</span>
+<span class="keyword">for</span> igpt = 1:nngpt
+    sigpt = s(igpt);
+    tigpt = t(igpt);
+    wght = wt(igpt);
+
+    <span class="comment">% Evaluate derivatives</span>
+    [jac_v,invjac_v,phi_v,dphidx_v,dphidy_v] = tderiv(sigpt,tigpt,xl_v,yl_v);
+    [psi_v,~,~] = tqderiv(sigpt,tigpt,xl_v,yl_v);
+
+    <span class="comment">% Gradient of the diffusion coefficients. CURRENTLY FIXED TO ZERO</span>
+    [diffx,diffy] = tgauss_gradcoeff(sigpt,tigpt,xl_v,yl_v);
+
+    <span class="comment">% Source f. Zero forcing in BMK test problem.</span>
+    [rhs_f] = 0*tgauss_source(sigpt,tigpt,xl_v,yl_v);
+
+      nel = length(xl_v(:,1));
+      zero_v = zeros(nel,1);
+      xx = zero_v;
+      yy = xx;
+
+      <span class="comment">% Wind field at integration pt</span>
+      [phi_e,dphids,dphidt] = tshape(sigpt,tigpt);
+      <span class="keyword">for</span> ivtx=1:3
+          xx = xx + phi_e(ivtx) * xl_v(:,ivtx);
+          yy = yy + phi_e(ivtx) * yl_v(:,ivtx);
+      <span class="keyword">end</span>
+      [flow] = w_fn(xx,yy);
+      windx = flow(:,1);
+      windy = flow(:,2);
+
+    <span class="comment">% Loop over the four bubble functions</span>
+    <span class="keyword">for</span> j = 1:4
+
+        <span class="comment">% Compute rhs-contribution from the source f</span>
+        fde(:,j) = fde(:,j) + wght * rhs_f(:) .* psi_v(:,j+3) .* jac_v(:);
+
+        <span class="comment">% Compute div(a*grad)-contribution = grad(a)*grad(u_tau): loop</span>
+        <span class="comment">% over vertices hat functions</span>
+        <span class="keyword">for</span> i = 1:3
+            bde(:,j,i) = bde(:,j,i) + wght * diffx(:) .* dphidx_v(:,i) .* psi_v(:,j+3);
+            bde(:,j,i) = bde(:,j,i) + wght * diffy(:) .* dphidy_v(:,i) .* psi_v(:,j+3);
+<span class="comment">%         end</span>
+        <span class="comment">% Compute - w dot \grad u</span>
+<span class="comment">%         for i = 1:3</span>
+            bde(:,j,i) = bde(:,j,i) - wght * windx(:).*sl_v(:,i) .* dphidx_v(:,i) .* psi_v(:,j+3);
+            bde(:,j,i) = bde(:,j,i) - wght * windy(:).*sl_v(:,i).* dphidy_v(:,i)  .* psi_v(:,j+3);
+        <span class="comment">% Compute  - Dt U</span>
+            bde(:,j,i) = bde(:,j,i) - wght .* sldt_v(:,i) .* phi_v(:,i) .*jac_v(:) .* psi_v(:,j+3);
+        <span class="keyword">end</span>
+        <span class="comment">% end vertices hat functions loop</span>
+    <span class="keyword">end</span>
+    <span class="comment">% end four bubble functions loop</span>
+<span class="keyword">end</span>
+<span class="comment">% end Gauss points loop</span>
+
+<span class="comment">% Assemble interior residuals from rhs-contributions</span>
+<span class="keyword">for</span> i = 1:4
+    intres(:,i) = intres(:,i) + fde(:,i);
+<span class="keyword">end</span>
+
+<span class="comment">% Multiply div(a*grad)-contribution by Galerkin solution</span>
+<span class="keyword">for</span> j = 1:4
+    <span class="keyword">for</span> k = 1:3
+        intres(:,j) = intres(:,j) + bde(:,j,k);
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>  <span class="comment">% end function</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [intres] = cd_intres_p1_with_p2(xy,evt,p1sol, p1timederiv, w_fn)
+%INTRES_P1_WITH_P2 interior residuals for P1 solution using P2 bubble functions
+%
+%   [intres] = cd_intres_p1_with_p2(xy,xl_s,yl_s,evt,p1sol)
+%
+%   input:
+%          xy         vertex coordinate vector
+%          evt        element mapping matrix
+%          p1sol      vertex solution vector
+%          p1timederiv      vertex solution vector time derivative
+%
+%   output:
+%          intres     interior residuals
+%
+% Function(s) called: triangular_gausspoints
+%                     tgauss_gradcoeff
+%                     tgauss_source
+%
+% See also INTRES_P1_WITH_P1
+%
+% Last update: 01/02/2017
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+%    TIFISS function:
+% Copyright (c) 2017 Alex Bespalov, Leonardo Rocchi, modifed BMK 2023
+
+x = xy(:,1);
+y = xy(:,2);
+nel = length(evt(:,1));
+
+% Recover local coordinates and local solution
+for ivtx = 1:3
+    xl_v(:,ivtx) = x(evt(:,ivtx));
+    yl_v(:,ivtx) = y(evt(:,ivtx));
+    sl_v(:,ivtx) = p1sol(evt(:,ivtx));
+    sldt_v(:,ivtx) = p1timederiv(evt(:,ivtx));
+end
+
+% Construct 2D gaussian rule over the reference triangle
+nngpt = 7;
+[s,t,wt] = triangular_gausspoints(nngpt);
+
+% Preallocate matrices
+intres = zeros(nel,4);
+bde = zeros(nel,4,3);
+fde = zeros(nel,4);
+
+% Loop over Gauss points
+for igpt = 1:nngpt
+    sigpt = s(igpt);
+    tigpt = t(igpt);
+    wght = wt(igpt);
+
+    % Evaluate derivatives
+    [jac_v,invjac_v,phi_v,dphidx_v,dphidy_v] = tderiv(sigpt,tigpt,xl_v,yl_v);
+    [psi_v,~,~] = tqderiv(sigpt,tigpt,xl_v,yl_v);
+
+    % Gradient of the diffusion coefficients. CURRENTLY FIXED TO ZERO
+    [diffx,diffy] = tgauss_gradcoeff(sigpt,tigpt,xl_v,yl_v);
+
+    % Source f. Zero forcing in BMK test problem.
+    [rhs_f] = 0*tgauss_source(sigpt,tigpt,xl_v,yl_v);
+
+      nel = length(xl_v(:,1));
+      zero_v = zeros(nel,1); 
+      xx = zero_v;
+      yy = xx;
+
+      % Wind field at integration pt
+      [phi_e,dphids,dphidt] = tshape(sigpt,tigpt);
+      for ivtx=1:3
+          xx = xx + phi_e(ivtx) * xl_v(:,ivtx);
+          yy = yy + phi_e(ivtx) * yl_v(:,ivtx);
+      end
+      [flow] = w_fn(xx,yy);
+      windx = flow(:,1);
+      windy = flow(:,2);
+
+    % Loop over the four bubble functions
+    for j = 1:4
+
+        % Compute rhs-contribution from the source f
+        fde(:,j) = fde(:,j) + wght * rhs_f(:) .* psi_v(:,j+3) .* jac_v(:);
+
+        % Compute div(a*grad)-contribution = grad(a)*grad(u_tau): loop
+        % over vertices hat functions
+        for i = 1:3
+            bde(:,j,i) = bde(:,j,i) + wght * diffx(:) .* dphidx_v(:,i) .* psi_v(:,j+3);
+            bde(:,j,i) = bde(:,j,i) + wght * diffy(:) .* dphidy_v(:,i) .* psi_v(:,j+3);
+%         end
+        % Compute - w dot \grad u
+%         for i = 1:3
+            bde(:,j,i) = bde(:,j,i) - wght * windx(:).*sl_v(:,i) .* dphidx_v(:,i) .* psi_v(:,j+3);
+            bde(:,j,i) = bde(:,j,i) - wght * windy(:).*sl_v(:,i).* dphidy_v(:,i)  .* psi_v(:,j+3);
+        % Compute  - Dt U 
+            bde(:,j,i) = bde(:,j,i) - wght .* sldt_v(:,i) .* phi_v(:,i) .*jac_v(:) .* psi_v(:,j+3);
+        end
+        % end vertices hat functions loop
+    end
+    % end four bubble functions loop
+end
+% end Gauss points loop
+
+% Assemble interior residuals from rhs-contributions
+for i = 1:4
+    intres(:,i) = intres(:,i) + fde(:,i);
+end
+
+% Multiply div(a*grad)-contribution by Galerkin solution
+for j = 1:4
+    for k = 1:3
+        intres(:,j) = intres(:,j) + bde(:,j,k);
+    end
+end
+
+end  % end function
+
+##### SOURCE END #####
+--></body></html>
