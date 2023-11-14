@@ -35,7 +35,7 @@ The output results from the four parameter problem are *slightly* different when
 The four parameter example is annotated below.
 
 Firstly the path is set up.
-Folders containing ```ifiss3.6```, ``tifiss1.2``` and ```sparse-grids-matlab-kit``` must be either be in the current directory, or added to the path by the user.
+Folders containing ```ifiss3.6```, ```tifiss1.2``` and ```sparse-grids-matlab-kit``` must be either be in the current directory, or added to the path by the user.
 ```matlab
 %% Set up path
 % The following directories need to be subdirectories of adaptive_sc_fem, 
