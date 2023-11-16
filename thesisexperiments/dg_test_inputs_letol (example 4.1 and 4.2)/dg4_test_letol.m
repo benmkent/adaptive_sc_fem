@@ -19,7 +19,7 @@ params.letol = 1e-6; % Local error tolerance
 adaptive_sc_fem;
 save(['l4-jomp-1e6.mat'],'reference','data_table','fem','problem','params','-v7.3')
 cd('1em6');
-% plot_data(data_table, reference,fem,params,problem)
+% process_output_data(data_table, reference,fem,params,problem)
 cd('..');
 
 %%
@@ -32,7 +32,7 @@ params.letol = 1e-5; % Local error tolerance
 adaptive_sc_fem;
 save(['l4-jomp-1e5.mat'],'reference','data_table','fem','problem','params','-v7.3')
 cd('1em5');
-% plot_data(data_table, reference,fem,params,problem)
+% process_output_data(data_table, reference,fem,params,problem)
 cd('..');
 
 %%
@@ -46,7 +46,7 @@ params.letol = 1e-4; % Local error tolerance
 adaptive_sc_fem;
 save(['l4-jomp-1e4.mat'],'reference','data_table','fem','problem','params','-v7.3')
 cd('1em4');
-% plot_data(data_table, reference,fem,params,problem)
+% process_output_data(data_table, reference,fem,params,problem)
 cd('..');
 
 %%
@@ -60,5 +60,5 @@ params.letol = 1e-3; % Local error tolerance
 adaptive_sc_fem;
 save(['l4-jomp-1e3.mat'],'reference','data_table','fem','problem','params','-v7.3')
 cd('1em3');
-% plot_data(data_table, reference,fem,params,problem)
+% process_output_data(data_table, reference,fem,params,problem)
 cd('..');

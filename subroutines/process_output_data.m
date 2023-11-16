@@ -123,7 +123,7 @@ for ii = 1:size(data_table,1)
     [~,inds_in_super,~,~] = compare_sparse_grids(I_super,I_super_r,I,I_r);
     I_in_super(ii,inds_in_super) = 1;
     ge_zero(ii) = ge_est_in_super(ii,inds_in_super(ii_zero_data(ii)));
-    
+    nsteps_zero(ii) = n_steps_in_super(ii,inds_in_super(ii_zero_data(ii)));
 %     J = data_table{ii,'J'};
 %     J = J{1};
 %     if ii==1
@@ -352,7 +352,7 @@ writematrix([data_table{inds_valid,'t'},MI_max(inds_valid,:)], 'max-mi.dat','Del
 writematrix([data_table{inds_valid,'t'},MI_max_mod(inds_valid,:)], 'max-mi-mod.dat','Delimiter','space');
 writematrix([data_table{:,'t'},data_table{:,'delta_t'}],'alg-timesteps.dat','Delimiter','space') 
 % writematrix([data_table{:,'t'}, n_steps_approx, n_steps_estimation, n_steps_approx + n_steps_estimation],'nsteps.dat','Delimiter','space');
-writecell([{'t','n_approx','n_est','n_total'};num2cell([data_table{:,'t'}, n_steps_approx, n_steps_estimation, n_steps_approx + n_steps_estimation, n_])],...
+writecell([{'t','n_approx','n_est','n_total','n_zero'};num2cell([data_table{:,'t'}, n_steps_approx, n_steps_estimation, n_steps_approx + n_steps_estimation, nsteps_zero(:)])],...
     'nsteps.dat','Delimiter','space');
 % writematrix([data_table{:,'t'}, n_colloc_approx, n_colloc_estimation, n_colloc_approx+n_colloc_estimation],'ncolloc.dat','Delimiter','space');
 writecell([{'t','n_approx','n_est','n_total'}; num2cell([data_table{:,'t'}, n_colloc_approx, n_colloc_estimation, n_colloc_approx+n_colloc_estimation])],...

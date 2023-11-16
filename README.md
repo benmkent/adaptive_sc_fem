@@ -88,7 +88,7 @@ save(['l4-jomp.mat'],'reference','data_table','fem','problem','params','-v7.3')
 ```
 The results are post processed into MATLAB figures and CSV files.
 ```matlab
-plot_data(data_table, reference,fem,params,problem)
+process_output_data(data_table, reference,fem,params,problem)
 ```
 For example, the resulting error estimate, error and tolerance are output as the following figure.
 
@@ -100,7 +100,7 @@ The path must be set up as described [above](#running-the-examples-for-the-paper
 
 Examples in the thesis without dedicated folders are either easily recreated with the tools or the plotted data is derived from data generated in other experiments.
 
-The output ```*.mat``` files will generally need postprocessing with the ```subroutine/plot_data.m``` function.
+The output ```*.mat``` files will generally need postprocessing with the ```subroutine/process_output_data.m``` function.
 
 | Example                       | Folder / tool |
 | -------------                 | ------------- |

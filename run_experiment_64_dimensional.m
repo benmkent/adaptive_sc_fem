@@ -19,4 +19,4 @@ for name = names
     save([name{1} '.mat'],'reference','data_table','fem','problem','params','-v7.3')
 end
 
-plot_data(data_table, reference,fem,params,problem)
+process_output_data(data_table, reference,fem,params,problem)

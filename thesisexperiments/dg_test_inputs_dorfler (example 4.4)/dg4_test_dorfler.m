@@ -19,7 +19,7 @@ params.marking_factor = 0.5; % Local error tolerance
 adaptive_sc_fem;
 save(['l4-jomp-t05.mat'],'reference','data_table','fem','problem','params','-v7.3')
 cd('theta05');
-plot_data(data_table, reference,fem,params,problem)
+process_output_data(data_table, reference,fem,params,problem)
 cd('..');
 
 %%
@@ -32,7 +32,7 @@ params.marking_factor = 1e-2; % Local error tolerance
 adaptive_sc_fem;
 save(['l4-jomp-t001.mat'],'reference','data_table','fem','problem','params','-v7.3')
 cd('theta001');
-plot_data(data_table, reference,fem,params,problem)
+process_output_data(data_table, reference,fem,params,problem)
 cd('..');
 
 %%
@@ -43,5 +43,5 @@ params = define_params('adaptive-base');
 adaptive_sc_fem;
 save(['l4-jomp-t01.mat'],'reference','data_table','fem','problem','params','-v7.3')
 cd('theta01');
-plot_data(data_table, reference,fem,params,problem)
+process_output_data(data_table, reference,fem,params,problem)
 cd('..');

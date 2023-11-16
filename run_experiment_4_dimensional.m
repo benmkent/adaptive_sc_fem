@@ -33,4 +33,4 @@ params.letol = 1e-5; % Local error tolerance
 adaptive_sc_fem;
 save(['l4-jomp.mat'],'reference','data_table','fem','problem','params','-v7.3')
 
-plot_data(data_table, reference,fem,params,problem)
+process_output_data(data_table, reference,fem,params,problem)
