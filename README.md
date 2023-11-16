@@ -97,6 +97,7 @@ For example, the resulting error estimate, error and tolerance are output as the
 # Running the thesis experiments
 The thesis experiments can be found within subfolders the folder ```thesisexperiments```. The folder names are representative of the experiments within.
 The path must be set up as described [above](#running-the-examples-for-the-paper).
+All folders (and subfiles) in the adaptive_sc_fem root directory should be included in the path.
 
 Examples in the thesis without dedicated folders are either easily recreated with the tools or the plotted data is derived from data generated in other experiments.
 
