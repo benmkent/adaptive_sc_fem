@@ -37,7 +37,7 @@ params.residual_estimator = 0;
 params.simplified_estimator = false;
 params.reference = 0;
 
-params.adapt_type = 'residual';
+params.adapt_type = 'hierarchical';
 
 if nargin == 1
     params.plot = 0;

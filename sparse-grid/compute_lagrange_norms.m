@@ -34,7 +34,7 @@ for ii = 1:I_star_r.size
     l2_norms_I_star(ii,1) = calc_l2rho_quick_precalc(I_star_r, uv, lpi, ii);
     fprintf('Lagrange polynomial L2 norm %d of %d\n',ii, I_star_r.size);
 end
-if I_star_r.size == I_star.size
+if I_star_r.size == I_r.size
     pts_in_both_grids_I_star = 1:I_star_r.size;
     pts_in_both_grids_I= 1:I_star_r.size;
 else

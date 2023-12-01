@@ -33,8 +33,8 @@ I_star_r = reduce_sparse_grid(I_star);
 
 if params.simplified_estimator == 0
     % Now must combine with Lagrange interpolation polynomial norms.
-    pi_delta = sum(ge_error_norm(I_in_I_star) .* precompute.l2_norms_I(:)');
-    pi_I_delta = sum(ge_error_norm(I_star_only) .* precompute.l2_norms_I_star(I_star_only)') + sum(ge_error_norm(I_in_I_star) .* precompute.l2_norms_diff(:)');
+    pi_delta = sum(ge_error_norm(I_in_I_star) .* precompute.l2_norms_I(:));
+    pi_I_delta = sum(ge_error_norm(I_star_only) .* precompute.l2_norms_I_star(I_star_only)) + sum(ge_error_norm(I_in_I_star) .* precompute.l2_norms_diff(:));
 else
     % Simplifed estimator
     pi_delta = mean(ge_error_norm(I_in_I_star));

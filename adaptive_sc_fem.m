@@ -145,8 +145,8 @@ while t_r < params.T
 
                 % Line 21-24: Initialise approximation structure
                 fprintf('Refine approximation structure...'); tic();
-                [Z_I_star, I_new, I_star_new] = refine_approximation(tr, Z_I_star, I, I_star, J, problem, params, fem, 1);
-                [Z_I_star_lofi, ~, ~] = refine_approximation(tr, Z_I_star_lofi, I, I_star, J, problem, params, fem, 0);
+                [Z_I_star, I_new, I_star_new] = refine_approximation(Z_I_star, I, I_star, J, problem, params, fem, 1);
+                [Z_I_star_lofi, ~, ~] = refine_approximation(Z_I_star_lofi, I, I_star, J, problem, params, fem, 0);
 
                 % Line 25-26: Update multi-index sets
                 I = I_new;
