@@ -19,9 +19,10 @@ params.letol = 1e-5; % Local error tolerance
 params.adapt_type = 'residual';
 params.grid = 'p1';
 params.grid_param = 2;
+params.plot = 1;
 
-adaptive_sc_fem;
+[data_table,fem,problem,params,reference] = adaptive_sc_fem(problem, params, reference);
 
 save(['l4-residual.mat'],'reference','data_table','fem','problem','params','-v7.3')
 
-plot_data(data_table, reference,fem,params,problem)
+process_output_data(data_table, reference,fem,params,problem)

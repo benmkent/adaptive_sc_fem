@@ -48,7 +48,11 @@ t_r=0;
 
 %% Initialise datatable and figures for storing data
 data_table = write_to_data_table(params);
-axArray = initialise_figures();
+if params.plot == 1
+    axArray = initialise_figures();
+else
+    axArray =[];
+end
 
 if strcmp(params.adapt_type,'residual')
     error_residual.pi_x = 0;
@@ -165,11 +169,11 @@ while t_r < params.T
                     %% Spatial refinement
                     I_r = reduce_sparse_grid(I);
                     [elerr] = flatten_spatial_estimator(error_residual.eta_x_z_T,I_r);
-
+                    if params.plot == 1
                     plot_data_tifiss(1,1,Z_I_star{1}.u_z(:,1),elerr,fem.ev,fem.xy);
-
+                    end
                     markstrat = 2; % dorfler
-                    threshold = min([0.3,max([0.1,1.5*(error_residual.pi_x_r - E)/error_residual.pi_x_r])]);
+                    threshold = min([0.5,max([0.1,1.5*(error_residual.pi_x_r - E)/error_residual.pi_x_r])]);
 
                     % Mark subset of elements
                     [Mset] = marking_strategy_fa(elerr,markstrat,threshold);
@@ -177,13 +181,14 @@ while t_r < params.T
                     % Refine FEM mesh for every collocation point
                     [Z_I_star,fem] = refine_fem_mesh(Z_I_star,Mset,fem,params);
                     fem = initialise_fem_matrices(problem,params,fem);
+
                     % Update data structure
-                    [Z_I_star_refined, ~ ,~] = refine_approximation(t_r, Z_I_star, I, I_star, [], problem, params, fem, 1);
+                    [Z_I_star_refined, ~ ,~] = refine_approximation(Z_I_star, I, I_star, [], problem, params, fem, 1);
                     Z_I_star = Z_I_star_refined;
                 end
                 if adapt_param == 1
                     %% Parametric refinement
-                    J = mark_I(error_residual.pi_y_mi_r, error_residual.eta_mi, params);
+                    J = mark_I(error_residual.pi_y_mi_r, error_residual.y_mi_r, params);
                     fprintf('marked indices...')
                     disp(J);
                     fprintf('done (%f seconds)\n', toc())

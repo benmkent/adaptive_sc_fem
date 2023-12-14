@@ -77,7 +77,7 @@ if params.plot == 1
     vec_var = vec_exp_u_sq - vec_exp_u.^2;
     vec_var(vec_var < 0) = 0;
     plot_surf(axStd,real(sqrt(vec_var)),fem,params);
-    caxis(axStd,[0,0.1]);
+    %caxis(axStd,[0,0.1]);
     %     caxis(axStd,[-9,0]);
     title(axStd,['Std t=' num2str(t)]);
 
@@ -156,8 +156,8 @@ if params.plot == 1
             legend(axEtaT,'show','Location','southeast');
             hold off;
             set(axError,'NextPlot','replaceall');
-            set(axError,'NextPlot','add');
             plot(axError,data_table,'t','pi_x')
+            set(axError,'NextPlot','add');
             plot(axError,data_table,'t','pi_t')
             plot(axError,data_table,'t','pi_y')
             plot(axError,data_table,'t','pi_xty')

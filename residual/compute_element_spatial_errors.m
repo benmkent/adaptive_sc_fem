@@ -58,7 +58,8 @@ for ii_k = 1 : (n_k-1)
     [elerr_nobc,fe,ae] = cdpost_p1_with_p2(fem,xy,evt,eex,tve,els,eboundt,thetaU(:,ii_k),dtU(:,ii_k),w_fn,a_fn,thetaT);
     % Use TIFISS BC on Dirichlet boundary -- CHECK DO WE ACTUALLY WANT TO
     % DO THIS? This should probably be replaced using the data estimator.
-    [err_p,elerr(:,ii_k)] = cdpost_p1_bc(ae,fe,elerr_nobc,xy,evt,eboundt,bc_fn);
+%     [err_p,elerr(:,ii_k)] = cdpost_p1_bc(ae,fe,elerr_nobc,xy,evt,eboundt,bc_fn);
+    elerr(:,ii_k) = elerr_nobc; % DO NOT APPLY THE BOUNDARY CORRECTION (THE ESTIMATOR HAS ZERO ERROR AT BOUNDARY)
     
     % Global error estimate
     errest(ii_k) = norm(elerr,2);

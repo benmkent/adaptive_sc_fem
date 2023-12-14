@@ -63,6 +63,7 @@ for ii = 1:length(Z_I_star)
     Z_I_star{ii}.u_z = U_remesh(:,ii);
     Z_I_star{ii}.u_z_tplusdt = U_remesh(:,ii);
     Z_I_star{ii}.t_z = t(ii);
+    Z_I_star{ii}.tplusdt = t(ii);
     Z_I_star{ii}.w = nan(1);
     Z_I_star{ii}.bound = bound_new;
     Z_I_star{ii}.notbound = notbound;
