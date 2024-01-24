@@ -15,7 +15,7 @@ names = {'test-interp-jomp'};
 
 for name = names
     params = define_params(name{1});
-    adaptive_sc_fem;
+    [data_table,fem,problem,params,reference] = adaptive_sc_fem(problem, params, reference);
     save([name{1} '.mat'],'reference','data_table','fem','problem','params','-v7.3')
 end
 

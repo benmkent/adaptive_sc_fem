@@ -1,5 +1,7 @@
 function [DT,U,Udot,time,n ,nrej, dt, UDD] = tr_modified(A,M,f,uzero,dtzero, t0, tfinal,tol,nstar,info, udd_old)
-%STABTR  stabilised TR integrator for n-dimensional system of ODEs
+%TR_MODIFIED  TR integrator for n-dimensional system of ODEs
+%
+%   Based upon the stabtr implementation of IFISS
 %   [DT,U,Udot,time] = stabtr(A,M,f,uzero,dtzero,tfinal,tol,10,0);
 %   input
 %          A, M      specified ODE system: M udot + A u = f without BCs

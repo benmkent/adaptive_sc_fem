@@ -1,326 +1,338 @@
-function fem = initialise_fem_matrices(problem, params)
-%% Define geometry of spatial domain (using ifiss3.6)
-pde=2; domain=1;
-rsquare_domain_modified(params.grid_param, params.grid_type)
-cd '../datafiles/'
-load('square_grid.mat','grid_type','y','x','xy','mv','bound','mbound','outbc');
-cd '../../adaptive_sc_fem'
+function fem = initialise_fem_matrices(problem, params,fem)
+%INITIALISE_FEM_MATRICES For a FEM mesh construct discrete adv-diff problem
+% Inputs
+%   problem     defines the adv-diff problem
+%   params      defines the approximation parameters
+%   fem         contains the FEM mesh properties
+%
+% Output
+%   fem         updated fem structure
 
-[ev,ebound] = q1grid(xy,mv,bound,mbound);
-switch problem.name
-    case 'one-d'
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_bk(xy,ev,wind_fn);
-        N0 = N;
+%% Set up FEM mesh variables
+xy = fem.xy;
+ev = fem.ev;
+bound = fem.bound;
+notbound = fem.notbound;
 
+%% Preprocess
 
-        epsilon = 1/10;
-        sigma = 0.3;
-        Diff = epsilon * A;
-        % Conv = @(y) ((10^.5 + 10^-.5)/2 + y(1)*(10^.5-10^-.5)/2)*N0; % + y(:,2)*N2  + y(:,3)*N3 + y(:,4)*N4;
-        Conv = @(y) N0 + sigma * y(1)*N0;
+%% Define wind field and matrices
+if problem.linear
+    %% Define fields
+    switch problem.wind_fn
+        case 'zero'
+            wind_fn{1} = @(x,y,nel) ones(size(x,1),2) * 0;
+            kk=1;
+        case 'recirculating'
+            wind_fn{1} = @(x,y,nel) recirculating_parameterised(x,y,[0,0], 1);
+            kk=1;
+        case 'recirculating-alt'
+            wind_fn{1} = @(x,y,nel) recirculating_parameterised(x,y,[0.5,0.5], 2);
+            kk=1;
+        case 'recirculating-uncertain'
+            n_dim = problem.nWind;
+            sigma = problem.sigmaWind;
+            % Set up parameters for offset "eddie" type wind field
+            sqrt_n = round(sqrt(n_dim));
+            dist_centres = 2/sqrt_n;
+            centres = -1 + dist_centres*0.5 + dist_centres * (0:(sqrt_n-1));
 
-        AN = @(y) Diff + Conv(y); % Define the advection-diffusion matrix as a sum of fns xi of the parameters y
-    case 'one-d-diff'
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N0 = N;
+            % Define mean field
+            wind_fn{1} = @(x,y,nel) recirculating_parameterised(x,y,[0,0], 1);
 
-
-        epsilon = 1/10;
-        sigma = 0.3;
-        Diff = @(y) (1+ sigma  * y(1)) * epsilon * A;
-        % Conv = @(y) ((10^.5 + 10^-.5)/2 + y(1)*(10^.5-10^-.5)/2)*N0; % + y(:,2)*N2  + y(:,3)*N3 + y(:,4)*N4;
-        Conv = @(y) N0;
-
-        AN = @(y) Diff(y) + Conv(y); % Define the advection-diffusion matrix as a sum of fns xi of the parameters y
-
-    case 'eigel'
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N0 = N;
-        A0 = A;
-
-        epsilon = 0.1;
-        nDim = problem.n;
-
-        alpha_bar = 0.547;
-        k = @(mm) floor(-0.5 + sqrt(1/4 + 2*mm));
-        beta_1 = @(mm) mm - k(mm)*(k(mm)+1)/2;
-        beta_2 = @(mm) k(mm) - beta_1(mm);
-        alpha_m = @(mm) alpha_bar * mm^-2;
-
-        xmap = @(x) 2*x - 1;
-        for mm = 1:nDim
-            diff_fn = @(x1,x2) alpha_m(mm) .* cos(2*pi* beta_1(mm) *x1) .* cos(2*pi*beta_2(mm)*x2);
-            diff_fn_shifted = @(x1,x2) diff_fn(xmap(x1),xmap(x2));
-            [Amm{mm},~,~,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn,diff_fn_shifted);
-        end
-
-        Diff = @(y) A0 + combine_matrices(y,Amm);
-        % Conv = @(y) ((10^.5 + 10^-.5)/2 + y(1)*(10^.5-10^-.5)/2)*N0; % + y(:,2)*N2  + y(:,3)*N3 + y(:,4)*N4;
-        Conv = @(y) N0;
-
-        AN = @(y) epsilon*Diff(y) + Conv(y); % Define the advection-diffusion matrix as a sum of fns xi of the parameters y
-
-    case 'quadrants-isotropic'
-        %Wind fn to generate the matrix N
-        sigma = [0.3,0.3,0.3,0.3];
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N0 = N;
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0.5,-0.5], 2);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N1 = N;
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[-0.5,-0.5], 2);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N2 = N;
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[-0.5,0.5], 2);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N3 = N;
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0.5,0.5], 2);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N4 = N;
-
-        Conv = @(y) N0 + sigma(1) * y(1)*N1 + sigma(2) * y(2)*N2 + sigma(3) * y(3)*N3 + sigma(4) * y(4)*N4;
-        epsilon = 1/10;
-        Diff = epsilon * A;
-        AN = @(y) Diff + Conv(y); % Define the advection-diffusion matrix as a sum of fns xi of the parameters y
-    case 'quadrants-anisotropic'
-        %Wind fn to generate the matrix N
-        sigma = [0.1,0.3,0.01,0.2];
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N0 = N;
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0.5,-0.5], 2);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N1 = N;
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[-0.5,-0.5], 2);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N2 = N;
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[-0.5,0.5], 2);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N3 = N;
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0.5,0.5], 2);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N4 = N;
-
-        Conv = @(y) N0 + sigma(1) * y(1)*N1 + sigma(2) * y(2)*N2 + sigma(3) * y(3)*N3 + sigma(4) * y(4)*N4;
-        epsilon = 1/10;
-        Diff = epsilon * A;
-        AN = @(y) Diff + Conv(y); % Define the advection-diffusion matrix as a sum of fns xi of the parameters y
-
-    case 'eddies'
-        n_dim = problem.n;
-        sigma = problem.sigma;
-        sqrt_n = round(sqrt(n_dim));
-        dist_centres = 2/sqrt_n;
-        centres = -1 + dist_centres*0.5 + dist_centres * (0:(sqrt_n-1));
-
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N0 = N;
-
-        for ii= 1:sqrt_n
-            for jj = 1:sqrt_n
-                x_w = centres(ii);
-                y_w = centres(jj);
-                wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[x_w,y_w], sqrt_n);
-                [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-                Nij{(ii-1)*sqrt_n + jj} = sigma * N;
+            % For each parameter define a smaller circulating wind field
+            % with magnitude scaled by $\sigma$
+            kk=1;
+            for ii= 1:sqrt_n
+                for jj = 1:sqrt_n
+                    kk=kk+1;
+                    x_w = centres(ii);
+                    y_w = centres(jj);
+                    wind_fn{kk} = @(x,y,nel) sigma* recirculating_parameterised(x,y,[x_w,y_w], sqrt_n);
+                end
             end
+        case 'djs-rf'
+            % Construct an advection field using an approximated stream
+            % function
+            n_dim = problem.nWind;
+            cov = 1e0;
+
+            % Define mean recirculating wind field.
+            wind_fn{1} = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
+
+            % Define perturbing fields through stream function
+            [wind_fn(2:(n_dim+1)), lambda, Vl, w_max, w_mean, xp, yp] = djs_wind_perturbation(n_dim,cov,7);
+            %             save('rf-construction','wind_fn','lambda','Vl','w_max','w_mean','xp','yp');
+
+            kk = n_dim+1;
+        case 'xonly'
+            % Construct an advection field that is w(x,y)=[1,0]
+            wind_fn{1} = @(x,y,nel) [1,0];
+            kk=1;
+        case 'xonly-weak'
+            % Construct an advection field that is w(x,y)=[0.1,0]
+            xLength = 1;
+            xTime = 10;
+            xU = xLength/xTime;
+            wind_fn{1} = @(x,y,nel) [xU,0];
+            kk=1;
+        case 'xonly-perturbed'
+            % Construct an advection field that is rotated w(x,y)=[0.1,0]
+            xLength = 1;
+            xTime = 20;
+            theta = 0;
+            U = xLength/xTime;
+            xU = U *cos(theta);
+            yU = U *sin(theta);
+            wind_fn{1} = @(x,y,nel) [xU,yU];
+            kk=1;
+
+            % perturb wind field with recirculating subfields
+            n_dim = problem.nWind;
+            sigma = problem.sigmaWind;
+            sqrt_n = round(sqrt(n_dim));
+            dist_centres = 2/sqrt_n;
+            centres = -1 + dist_centres*0.5 + dist_centres * (0:(sqrt_n-1));
+            for ii= 1:sqrt_n
+                for jj = 1:sqrt_n
+                    kk=kk+1;
+                    x_w = centres(ii);
+                    y_w = centres(jj);
+                    wind_fn{kk} = @(x,y,nel) sigma  * U * recirculating_parameterised(x,y,[x_w,y_w], sqrt_n);
+                end
+            end
+        case 'pouiseuille'
+            % Construct pouiseille flow no parameters.
+            wind_fn{1} = @(x,y,nel) 0.1*[(1-y.^2) , 0*y];
+            kk=1;
+        otherwise
+            error('Unknown wind fn');
+    end
+    % Append extra zero wind functions as necessary to get correct number of rv
+    if kk <= problem.nWind
+        for kk_ii = (kk+1):problem.nWind+1
+            wind_fn{kk_ii} = @(x,y,nel) ones(size(x,1),2) * 0;
         end
-        Conv = @(y) N0 + combine_matrices(y, Nij); %N0 + sum(bsxfun(@times,reshape(y,1,1,[]),Nij),1);
-        epsilon = 1/10;
-        Diff = epsilon * A;
-        AN = @(y) Diff + Conv(y); % Define the advection-diffusion matrix as a sum of fns xi of the parameters y
+    end
 
-    case 'djs-div-free'
-        wind_fn = @(x,y,nel) wind_fn_parameterised(x,y,[0,0], 1);
-        [A,N0,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
+    % plot_wind_fn(wind_fn);
 
-        %         Ben (Catherine, for information)
-        % As discussed yesterday I am attaching a bunch of m-files
-        % Note that these are designed to work with Q2 approximation not Q1
-        %
-        % ---------------------------------------------
-        % Start with linstab_startdata.m lines 19 to 51
-        % line 20 ...
-        % xyp are the Q1 coordinates of the current grid defined by xy and mv
-        % These are the vertices coordinates
-        %[xyp,mp,map] = q2q1map(xy,mv);
-        [ ~, xyp, boundp] = rsquare_domain_modified_fn(6,1);
-        np = length(xyp);
-
-        % lines 21 to 38
-        % sets up discrete covariance matrix Cvar
-        % (setting delta=1 generates rapidly decaying eigenvalues ...)
-
-        % Set up covariance operator
-        dx = abs( xyp(:,1)*ones(1,np) - ones(np,1)*xyp(:,1)' );
-        dy = abs( xyp(:,2)*ones(1,np) - ones(np,1)*xyp(:,2)' );
-
-        %corrL = 2.0;    %% reference length L for the domain
-        %dist = sqrt( dx.^2 + dy.^2 );
-        %delta = 1;
-        %Cvar = exp(-(dist./corrL).^(1+delta));
-
-        delta = 1; %problem.delta; % delta = 1;
-        corrx = problem.corrlength; %2; % problem.corrx; %         corrx = 2;
-        corry = problem.corrlength; %2; %problem.corry; %corry = 2;
-        dist = sqrt((dx/corrx).^2 + (dy/corry).^2);
-        Cvar = exp(-dist.^(1+delta));
-
-        %dist = dx/corrx + dy/corry;
-        %Cvar = exp(-dist);
-
-        % line 43
-        % cov is a multiplier ("coefficient of variation")
-
-        cov   = 1e-1; %problem.cov;
-        Cvar = cov * Cvar;
-
-        % lines 47 to 49
-        % generates kl biggest eigenvalues and corresponding eigenvectors
-        % (captures 95% of total variance)
-
-        fprintf('Computing eigenvalues of covariance operator ... ');
-        [V,D] = eig(Cvar);
-        [lambda,index] = sort(diag(D),'descend');
-        V = V(:,index);
-        fprintf('done.\n');
-        % Use enough terms to capture 95% of fluctuation
-        kl = np;
-        lt = sum(lambda);
-        lp = lambda(np);
-        %         while lp/lt < .05,
-        %             kl = kl-1;
-        %             lp = lp + lambda(kl);
-        %         end
-        kl = problem.n;
-        ratio = sum(lambda(1:kl))/sum(lambda);
-
-        % lines 77 to 81
-        % saves data for later use in truncated "KL"  expansion
-        % (note the scaling of the eigenvector in line 80
-        % by the square root of the associated eigenvalue ..)
-%         Vl = V(:,1:kl)*diag(sqrt(lambda(1:kl)));
-        Vl = V(:,1:kl)*diag((lambda(1:kl)));
-
-        % ---------------------------------------------
-        % Look at linstab_alleig_for_spinterp.m next
-        %
-        % lines 51 to 54
-        % generate the scalar perturbation field dpsi
-        % associated the multidimensional collocation point xi
-        % construct the perturbed veocity field and convection matrix
-        U = 1;      % normalization of velocity via max(inflow) / max(cavity b.c.)
-        boundvec = ones(size(xyp(:,1)));
-%         boundvec(boundp) = 0;
-%         dpsi = @(xi) U*cov*(Vl*xi(:)) .* boundvec;
-
-%         psi0 = xyp(:,1).^2 .* (1-xyp(:,2).^2) + xyp(:,2).^2;
-        
-        n_x = sqrt(size(xyp,1));
-        xp = reshape(xyp(:,1), [n_x,n_x]);
-        yp = reshape(xyp(:,2), [n_x,n_x]);
-        
-        Vl_xyp = reshape(Vl, [n_x,n_x,problem.n]);
-
-%         wx_xyp = diff(Vl_xyp,2,1)./(diff(xp,2,1));
-        wx_xyp = (Vl_xyp(3:end,:,:)-Vl_xyp(1:(end-2),:,:))./(xp(3:end,:)-xp(1:(end-2),:));
-        % Extend on to x=-1,1 boundary
-        wx_xyp_extended = zeros(size(Vl_xyp));
-        wx_xyp_extended(2:end-1,:,:) = wx_xyp;
-%         wx_xyp = wx_xyp(:,2:end-1,:);
-%         xp = xp(2:(end-1),2:(end-1),:);
-%         wy_xyp = diff(Vl_xyp,2,1)./diff(yp,2,2);
-        wy_xyp = (Vl_xyp(:,3:end,:)-Vl_xyp(:,1:(end-2),:))./(yp(:,3:end)-yp(:,1:(end-2)));
-        %Extend onto y=-1,1 boundary
-        wy_xyp_extended = zeros(size(Vl_xyp));
-        wy_xyp_extended(:,2:end-1,:) = wy_xyp;
-       
-%         wy_xyp = wy_xyp(2:end-1,:,:);
-%         yp = yp(2:(end-1),2:(end-1),:);
-
-
-        % lines 62 to 63
-        % plots the perturbation field
-        % Note that dpsi will be interpreted as a discrete stream function field
-        % in what follows
-        %
-        % ---------------------------------------------
-        % Look at linstab_neig_for_spinterp.m next
-        %
-        % lines 64 to 68
-        % construct the perturbation (note multiplication by cov  in line 68)
-
-        % line 74
-        % generate the discrete convection matrix Nxi associated with the
-        % perturbation (should be skew-symmetric by construction, see below)
-%         psi = @(xi) psi0 + dpsi(xi);
-        
-        [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-        N0 = N;
-
-        for ii= 1:problem.n
-                wind_fn = @(x,y,nel) [interp2(xp.',yp.',squeeze(wx_xyp_extended(:,:,ii)).',x,y), interp2(xp.',yp.',squeeze(wy_xyp_extended(:,:,ii)).',x,y)];
-                [A,N,Q,epe,eph,epw,n2] = femq1_cd_modified(xy,ev,wind_fn);
-                Nij{ii} = 0.5* ( N - N.');
+    %% Construct the advection matrices
+    for ii = 1:length(wind_fn)
+        fprintf('(%d of %d)...',ii,length(wind_fn));
+        switch params.grid
+            case 'q1'
+                N{ii} = femq1_conv(xy,ev, wind_fn{ii});
+            case 'p1'
+                N{ii} = femp1_conv(xy,ev, wind_fn{ii});
         end
-        Conv = @(y) N0 + combine_matrices(y, Nij); %N0 + sum(bsxfun(@times,reshape(y,1,1,[]),Nij),1);
-        epsilon = 1/10;
-        Diff = epsilon * A;
-        AN = @(y) Diff + Conv(y); % Define the advection-diffusion matrix as a sum of fns xi of the parameters y
+    end
 
-    otherwise
-        error('Invalid test problem')
+    nYConv = length(wind_fn)-1;
+
+    %% Construct affine field
+    if nYConv > 0
+        Conv = @(y) N{1} + combine_matrices(y(1:nYConv), N(2:(nYConv+1)));
+    else
+        Conv = @(y) N{1};
+    end
+
+    wind_fn_eval = @(x1,x2, y_in) evaluate_w_lincomb(x1,x2,[1;y_in((1):(nYConv))],wind_fn);
+
+else
+    %% Non affine advection
+    % Can define through a predefined non-affine function u
+    % BMK - Should change this notation
+    u = problem.u;
+    wind_fn = @(x1,x2,y) u([x1,x2],z);
+
+    switch params.grid
+        case 'q1'
+            Conv = @(y) femq1_conv(xy,ev, @(x1,x2) wind_fn(x1,x2,y));
+        case 'p1'
+            Conv = @(y) femp1_conv(xy,ev, @(x1,x2) wind_fn(x1,x2,y));
+    end
+
+    wind_fn_eval = @(x1,x2, y)  wind_fn(x1,x2,y);
 end
 
-%% get boundary condition at current and previous times
-xbd=xy(bound,1); ybd=xy(bound,2);
-% bc=specific_bc(xbd,ybd);
-bc=hotwallx_bc(xbd,ybd);
-bc_alt=hotwallx_bc(-xbd,ybd);
+%% Set up diffusion
+if problem.linear == 1
+    % Sets up diffusion field as a Cartesian tensor.
+    % Note -- this is not fully implemented! For error estimation in
+    % particular the field should be assumed to be isotropic, with zeros on
+    % the off-diagonals (index 2 and 3) and equal values in indices 1 and 2.
+    switch problem.diff_fn
+        case 'fixed'
+            % Fixed diffusion coefficient.
+            a_fn{1} = @(x,y) problem.viscosity * [ones(size(x,1),1), zeros(size(x,1),2), ones(size(x,1),1)];
+            kk = 1;
+        case 'scalar-var'
+            % Scalar diffusion with one parameter.
+            a_fn{1} = @(x,y) problem.viscosity * [ones(size(x,1),1), zeros(size(x,1),2), ones(size(x,1),1)];
+            a_fn{2} = @(x,y) problem.viscosity_var * [ones(size(x,1),1), zeros(size(x,1),2), ones(size(x,1),1)];
+            kk = 2;
+        case 'eigel'
+            % WARNING - Not been tested properly.
+            % This sets up the so called Eigel diffusion field from
+            % https://doi.org/10.1016/j.cma.2013.11.015
+            nDim = problem.nDiff;
 
-invtau = 1/problem.tau;
-% bc_fn = @(t,y) bc*(1-exp(-invtau*t));
-bc_fn = @(t,y) bc*(1-exp(-invtau*t));
-bc_fn2 =@(t,y) (t > 50).*(- bc*(1-exp(-invtau*(t-50))) + bc_alt.*(1-exp(-invtau*(t-50)))*10^(y(5)/10));
+            alpha_bar = 0.547;
+            k = @(mm) floor(-0.5 + sqrt(1/4 + 2*mm));
+            beta_1 = @(mm) mm - k(mm)*(k(mm)+1)/2;
+            beta_2 = @(mm) k(mm) - beta_1(mm);
+            alpha_m = @(mm) alpha_bar * mm^-2;
 
-bc_fn_prime = @(t,y) invtau*bc*(exp(-invtau*t));
-bc_fn2_prime = @(t,y)  (t > 50).*(- invtau*bc.*(exp(-invtau*(t-50))) + invtau*bc_alt.*(exp(-invtau*(t-50)))*10^(y(5)));
+            a_fn{1} = @(x,y) eye(2);
+            xmap = @(x) (x+1)/2;
+            for mm = 1:nDim
+                diff_fn = @(x1,x2) alpha_m(mm) .* cos(2*pi* beta_1(mm) *x1) .* cos(2*pi*beta_2(mm)*x2);
+                diff_fn_shifted = @(x1,x2) diff_fn(xmap(x1),xmap(x2))  * eye(2);
+                a_fn{1+mm} = diff_fn_shifted;
+            end
+            kk=1+mm;
 
+        case 'complex'
+            % Warning - this has not been tested properly.
+            a0 = 1e-4;
+            a_fn{1} = @(x,y) a0 * [1,0, 0, 1i];
+    end
+
+    % Append extra zero diff functions as necessary to get correct number of rv
+    if kk <= problem.nDiff
+        for kk_ii = (kk+1):problem.nDiff+1
+            a_fn{kk_ii} = @(x,y,nel) 0 * [ones(size(x,1),1), zeros(size(x,1),2), ones(size(x,1),1)];
+        end
+    end
+
+    %% Compute diffusion matrices
+    for ii = 1:length(a_fn)
+        fprintf('(%d of %d)...',ii,length(a_fn));
+        switch params.grid
+            case 'q1'
+                [A{ii}, H] = femq1_diff_only(xy,ev, a_fn{ii});
+            case 'p1'
+                [A{ii}, H] = femp1_diff_only(xy,ev, a_fn{ii});
+        end
+    end
+
+    %% Construct the affine diffusion matrix.
+    nYDiff = length(a_fn)-1;
+
+    if nYDiff > 0
+        Diff = @(y) A{1} + combine_matrices(y((nYConv+1):(nYConv+nYDiff)), A(2:end));
+    else
+        Diff = @(y) A{1};
+    end
+
+    %     a_fn_eval = @(x1,x2, y)  [1,0] * reshape(sum ( [1; y((nYConv+1):(nYConv+nYDiff))] .* cell2mat(cellfun(@(fi)reshape(fi(x1,x2),[1,4]),a_fn,'UniformOutput',false)'),1),[2,2]) *[1;0];
+    a_fn_eval = @(x1,x2, y) evaluate_a_lincomb(x1,x2,[1;y((nYConv+1):(nYConv+nYDiff))],a_fn);
+
+else
+    %% Construct diffusion field for each y by explicitly calling the appropriate FEM function.
+    u = problem.u;
+    a_fn = @(x1,x2,y) (aL-aT) * u([x1,x2],y)' * u([x1,x2],z) / norm(u([x1,x2],y),2) +...
+        (aT*norm(u([x1,x2],y),2) + Dd) * ones(2,2);
+    switch params.grid
+        case 'q1'
+            [~, H] = femq1_diff_only(xy,ev, @(x1,x2) a_fn(x1,x2,zeros(problem.n,1)));
+            Diff = @(y) femq1_diff_only(xy,ev, @(x1,x2) a_fn(x1,x2,y));
+        case 'p1'
+            [~, H] = femp1_diff_only(xy,ev, @(x1,x2) a_fn(x1,x2,zeros(problem.n,1)));
+            Diff = @(y) femp1_diff_only(xy,ev, @(x1,x2) a_fn(x1,x2,y));
+    end
+
+    a_fn_eval = @(x1,x2,y) a_fn(x1,x2,y);
+end
+
+%% Set up boundary condition
+% Identify boundary indices and coordinates
 notbound = 1:size(xy,1);
 notbound = setdiff(notbound, bound);
-
-if problem.change_bc == 0
-fr = @(t,y) -filter_rows_columns(AN(y),notbound,bound)*bc_fn(t,y) - Q(notbound,bound)*bc_fn_prime(t,y);
-else
-fr = @(t,y)  -filter_rows_columns(AN(y),notbound,bound)*bc_fn(t,y) - Q(notbound,bound)*bc_fn_prime(t,y) -filter_rows_columns(AN(y),notbound,bound)*bc_fn2(t,y) - Q(notbound,bound)*bc_fn2_prime(t,y); 
+xbd=xy(bound,1); ybd=xy(bound,2);
+switch problem.bc
+    case 'dirichlet'
+        bc= zeros(size(xbd,1),1);
+        bc_fn = @(t,y) bc*zeros(1,length(t));
+        bc_fn_prime = @(t,y) bc*zeros(1,length(t));
+    case 'hotwall'
+        bc=hotwallx_bc(xbd,ybd);
+        invtau = 1/problem.tau;
+        % bc_fn = @(t,y) bc*(1-exp(-invtau*t));
+        bc_fn = @(t,y) bc*(1-exp(-invtau*t));
+        bc_fn_prime = @(t,y) invtau*bc*(exp(-invtau*t));
+    case 'hotwall-timebc'
+        bc=hotwallx_bc(xbd,ybd);
+        invtau = 1/problem.tau;
+        % bc_fn = @(t,y) bc*(1-exp(-invtau*t));
+        bc_fn = @(t,y) bc*((1-exp(-invtau*t)).*(1+0.2*sin(2*pi*t)));
+        bc_fn_prime = @(t,y) invtau*bc*((exp(-invtau*t)).*(1+0.2*sin(2*pi*t))) + 2*pi*bc*((1-exp(-invtau*t)).*(0.2*cos(2*pi*t)));
+    case 'neumann'
+        % Define homgenous Dirichlet BC at x_2=-1.
+        bound = find(abs((xy(:,2) - -1)) < 1e-8);
+        notbound = 1:size(xy,1);
+        notbound = setdiff(notbound, bound);
+        xbd=xy(bound,1); ybd=xy(bound,2);
+        bc_fn = @(t,y) zeros(length(bound),length(t));
+        bc_fn_prime =  @(t,y) zeros(length(bound),length(t));
+    case 'pipe'
+        % Define homegenous Dirichlet BC at x_2=+-1
+        bound = sort([find(abs((xy(:,2) - -1)) < 1e-8); find(abs((xy(:,2) - 1)) < 1e-8)]);
+        notbound = 1:size(xy,1);
+        notbound = setdiff(notbound, bound);
+        xbd=xy(bound,1); ybd=xy(bound,2);
+        bc_fn = @(t,y) zeros(length(bound),length(t));
+        bc_fn_prime =  @(t,y) zeros(length(bound),length(t));
+    otherwise
+        error('BC does not exist');
 end
 
-ANx = @(y) filter_rows_columns(AN(y),notbound,notbound);
-Qx = filter_rows_columns(Q, notbound,notbound);
-fx = @(t,y) fr(t,y);
+%% Set up forcing function
+switch problem.f
+    case 'zero'
+        force_fn = @(x) 0; %zeros(size(xy,1),1);
+    case 'square'
+        x1_source = -0.5;
+        x2_source = 0;
+        r = 0.05;
+        f_factor = 20;
 
-fem.AN = ANx;
-fem.Q = Qx;
-fem.f = fx;
-fem.xy = xy;
-fem.ev = ev;
-fem.bound = bound;
-fem.notbound = notbound;
-fem.bc_fn = bc_fn;
+        force_fn = @(x) f_factor * double(abs(x(:,1)-x1_source) < r & abs(x(:,2)-x2_source) < r);
+    case 'circle'
+        x1_source = -0.5;
+        x2_source = 0;
+        r = 0.05;
+        f_factor = 10;
 
-fem.mass = Q;
-fem.stiffness = Diff / epsilon;
+        force_fn = @(x) f_factor*double((x(:,1)-x1_source).^2 + (x(:,2)-x2_source).^2 < r^2);
+    case 'one'
+        force_fn = @(x) ones(size(x,1),1);
+    otherwise
+        error('Unknown forcing')
+end
+
+%% Construct forcing vector 
+switch params.grid
+    case 'p1'
+        f = femp1_force(xy,ev, force_fn);
+    case 'q1'
+        f = femq1_force(xy,ev, force_fn);
+end
+
+%% Update fem structure
+% Store constructed matrices and functions into FEM structure.
+fem.wind_fn = wind_fn_eval;
+fem.a_fn = a_fn_eval;
+
+fem.diff = Diff;
 fem.conv = Conv;
-[hx,hy,eex] = edgegen(xy,ev);
-fem.hx = hx;
-fem.hy = hy;
-fem.eex = eex;
-fem.ebound = ebound;
-fem.lambda = epsilon;
+fem.mass = fem.Q;
+fem.stiffness = H;
+fem.bc_fn = bc_fn;
+fem.bc_fn_prime = bc_fn_prime;
+fem.f = f;
+
+fprintf('Spatial DOF per pt %d\n', size(fem.xy,1));
 
 end

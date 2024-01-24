@@ -19,7 +19,7 @@ params.k_interp = 10; % c_{tol} safety factor
 params.marking_factor = 0.1; % Marking factor
 params.letol = 1e-5; % Local error tolerance
 
-adaptive_sc_fem;
+[data_table,fem,problem,params,reference] = adaptive_sc_fem(problem, params, reference);
 save(['l4-jomp.mat'],'reference','data_table','fem','problem','params','-v7.3')
 
 process_output_data(data_table, reference,fem,params,problem)

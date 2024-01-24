@@ -1,0 +1,321 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>plot_data_tifiss</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-09-27"><meta name="DC.source" content="plot_data_tifiss.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> plot_data_tifiss(pmethod,dom_type,sol,errelem,evt,xy)
+<span class="comment">%PLOT_DATA_TIFISS renamed plot_data function from TIFISS</span>
+<span class="comment">% plot_data plots solution as well as the error estimate</span>
+<span class="comment">%</span>
+<span class="comment">% plot_data(pmethod,dom_type,sol,errelem,evt,xy)</span>
+<span class="comment">%</span>
+<span class="comment">% input:</span>
+<span class="comment">%         pmethod      approximation method</span>
+<span class="comment">%        dom_type      domain type</span>
+<span class="comment">%             sol      nodal FE solution vector</span>
+<span class="comment">%         errelem      element error indicators</span>
+<span class="comment">%             evt      element mapping matrix</span>
+<span class="comment">%              xy      vertex coordinate vector</span>
+<span class="comment">%</span>
+<span class="comment">% NOTE that the solution and element-indicators are interpolated on a square</span>
+<span class="comment">% grid [X,Y] in order to plot isolines (contour plot); Matlab does not provide</span>
+<span class="comment">% a countour function for mesh-based functions.</span>
+<span class="comment">%</span>
+<span class="comment">%   TIFISS function: LR; 22 June 2018</span>
+<span class="comment">% Copyright (c) 2018 A. Bespalov, L. Rocchi</span>
+
+  <span class="keyword">global</span> slope1crack
+  <span class="keyword">global</span> slope2crack
+
+<span class="comment">% Recover correct element mapping matrix if P2 approximation is used</span>
+  <span class="keyword">if</span> isequal(pmethod,2)
+     evt = evt(:,1:3);
+  <span class="keyword">end</span>
+
+  nel  = size(evt,1);   <span class="comment">% Number of elements</span>
+
+<span class="comment">% Refine grid and get the cartesian product mesh</span>
+  npoints = 100;
+  x = linspace(min(xy(:,1)),max(xy(:,1)),npoints);
+  y = linspace(min(xy(:,2)),max(xy(:,2)),npoints);
+  [X1,Y1] = meshgrid(x,y);
+
+<span class="comment">% Gridded solution for contour plot</span>
+  solcont = griddata(xy(:,1),xy(:,2),sol,X1,Y1);
+
+<span class="comment">% Recover local coordinates of elements</span>
+  xl_v = zeros(nel,3);
+  yl_v = zeros(nel,3);
+  <span class="keyword">for</span> ivtx = 1:3
+      xl_v(:,ivtx) = xy(evt(:,ivtx),1); <span class="comment">% x-coordinates of all vertices</span>
+      yl_v(:,ivtx) = xy(evt(:,ivtx),2); <span class="comment">% y-coordinates of all vertices</span>
+  <span class="keyword">end</span>
+<span class="comment">% Recover the element's centroid coordinates</span>
+  xyc(:,1) = (1/3) * sum(xl_v,2);
+  xyc(:,2) = (1/3) * sum(yl_v,2);
+
+<span class="comment">% Refined grid and get cartesian product mesh</span>
+  x = 0.5 * ( x(1:end-1) + x(2:end) );
+  y = 0.5 * ( y(1:end-1) + y(2:end) );
+  [X2,Y2] = meshgrid(x,y);
+
+<span class="comment">% Error estimator</span>
+  err = griddata(xyc(:,1),xyc(:,2),errelem,X2,Y2);
+<span class="comment">% Fix to zero (eventual very small) negative values (due to griddata interpolation)</span>
+  err(err&lt;0.0) = 0.0;
+
+<span class="comment">% Eliminate data outside the spatial domain</span>
+  <span class="keyword">if</span> dom_type==2
+      <span class="comment">% L-shaped domain</span>
+      solcont(X1&lt;0 &amp; Y1&lt;0) = nan;
+      err(X2&lt;0 &amp; Y2&lt;0)     = nan;
+  <span class="keyword">elseif</span> dom_type==3
+      <span class="comment">% Crack domain</span>
+      solcont((Y1&gt;slope1crack*X1 &amp; X1&lt;0) &amp; (Y1&lt;0)) = nan;
+      solcont((Y1&lt;slope2crack*X1 &amp; X1&lt;0) &amp; (Y1&gt;0)) = nan;
+      solcont((Y1&gt;slope1crack*X1 &amp; X1&lt;0) &amp; (Y1&lt;0)) = nan;
+      solcont((Y1&lt;slope2crack*X1 &amp; X1&lt;0) &amp; (Y1&gt;0)) = nan;
+      err((Y2&gt;slope1crack*X2 &amp; X2&lt;0) &amp; (Y2&lt;0))     = nan;
+      err((Y2&lt;slope2crack*X2 &amp; X2&lt;0) &amp; (Y2&gt;0))     = nan;
+      err((Y2&gt;slope1crack*X2 &amp; X2&lt;0) &amp; (Y2&lt;0))     = nan;
+      err((Y2&lt;slope2crack*X2 &amp; X2&lt;0) &amp; (Y2&gt;0))     = nan;
+  <span class="keyword">end</span>
+
+<span class="comment">% -----------------------------------------------------------------------------</span>
+<span class="comment">% Plot solution and spatial estimate</span>
+<span class="comment">% -----------------------------------------------------------------------------</span>
+  figure;
+
+  subplot(221)
+  contour(X1,Y1,solcont,20);
+  axis <span class="string">square</span>;  axis <span class="string">off</span>;
+  title([<span class="string">'Solution with P'</span>,num2str(pmethod),<span class="string">' approximations'</span>]);  <span class="comment">%title(titleSolution);</span>
+  outlinedomain(dom_type,xy);
+
+  subplot(222)
+  trimesh(evt,xy(:,1),xy(:,2),sol);
+  axis <span class="string">square</span>; view(330,30);
+
+  subplot(223)
+  contour(X2,Y2,err,20);
+  axis <span class="string">square</span>;  axis <span class="string">off</span>;
+  title(<span class="string">'Estimated error'</span>);
+  outlinedomain(dom_type,xy);
+
+  subplot(224)
+  mesh(X2,Y2,err);
+  axis <span class="string">square</span>; view(330,30);
+
+  set(findall(gcf,<span class="string">'-property'</span>,<span class="string">'Fontsize'</span>),<span class="string">'Fontsize'</span>,13);
+<span class="keyword">end</span> <span class="comment">%end function</span>
+
+
+<span class="comment">% -----------------------------------------------------------------------------</span>
+<span class="comment">% Child function</span>
+<span class="comment">% -----------------------------------------------------------------------------</span>
+<span class="keyword">function</span> outlinedomain(dom_type,xy)
+<span class="comment">% Calling the function outlining the domain in contour plot</span>
+  <span class="keyword">if</span> dom_type == 1
+      <span class="keyword">if</span> min(xy(:,1)) == 0
+          unitsquare;
+      <span class="keyword">else</span><span class="comment">%min(xy(:,1)) == -1</span>
+          squarex;
+      <span class="keyword">end</span>
+  <span class="keyword">elseif</span> dom_type==2
+      ellx;
+  <span class="keyword">else</span><span class="comment">%dom_type==3</span>
+      largecrack;
+  <span class="keyword">end</span>
+<span class="keyword">end</span> <span class="comment">% end child function</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function plot_data_tifiss(pmethod,dom_type,sol,errelem,evt,xy)
+%PLOT_DATA_TIFISS renamed plot_data function from TIFISS 
+% plot_data plots solution as well as the error estimate
+%
+% plot_data(pmethod,dom_type,sol,errelem,evt,xy)
+%
+% input: 
+%         pmethod      approximation method
+%        dom_type      domain type
+%             sol      nodal FE solution vector
+%         errelem      element error indicators
+%             evt      element mapping matrix
+%              xy      vertex coordinate vector  
+%
+% NOTE that the solution and element-indicators are interpolated on a square 
+% grid [X,Y] in order to plot isolines (contour plot); Matlab does not provide 
+% a countour function for mesh-based functions.
+%
+%   TIFISS function: LR; 22 June 2018
+% Copyright (c) 2018 A. Bespalov, L. Rocchi
+
+  global slope1crack 
+  global slope2crack
+
+% Recover correct element mapping matrix if P2 approximation is used  
+  if isequal(pmethod,2)
+     evt = evt(:,1:3);
+  end
+  
+  nel  = size(evt,1);   % Number of elements
+
+% Refine grid and get the cartesian product mesh
+  npoints = 100; 
+  x = linspace(min(xy(:,1)),max(xy(:,1)),npoints); 
+  y = linspace(min(xy(:,2)),max(xy(:,2)),npoints); 
+  [X1,Y1] = meshgrid(x,y);
+
+% Gridded solution for contour plot 
+  solcont = griddata(xy(:,1),xy(:,2),sol,X1,Y1); 
+  
+% Recover local coordinates of elements
+  xl_v = zeros(nel,3); 
+  yl_v = zeros(nel,3); 
+  for ivtx = 1:3
+      xl_v(:,ivtx) = xy(evt(:,ivtx),1); % x-coordinates of all vertices
+      yl_v(:,ivtx) = xy(evt(:,ivtx),2); % y-coordinates of all vertices
+  end
+% Recover the element's centroid coordinates
+  xyc(:,1) = (1/3) * sum(xl_v,2);
+  xyc(:,2) = (1/3) * sum(yl_v,2);
+
+% Refined grid and get cartesian product mesh
+  x = 0.5 * ( x(1:end-1) + x(2:end) );
+  y = 0.5 * ( y(1:end-1) + y(2:end) );
+  [X2,Y2] = meshgrid(x,y); 
+  
+% Error estimator
+  err = griddata(xyc(:,1),xyc(:,2),errelem,X2,Y2);
+% Fix to zero (eventual very small) negative values (due to griddata interpolation)
+  err(err<0.0) = 0.0;  
+  
+% Eliminate data outside the spatial domain  
+  if dom_type==2 
+      % L-shaped domain
+      solcont(X1<0 & Y1<0) = nan;
+      err(X2<0 & Y2<0)     = nan;
+  elseif dom_type==3
+      % Crack domain
+      solcont((Y1>slope1crack*X1 & X1<0) & (Y1<0)) = nan;
+      solcont((Y1<slope2crack*X1 & X1<0) & (Y1>0)) = nan;
+      solcont((Y1>slope1crack*X1 & X1<0) & (Y1<0)) = nan;
+      solcont((Y1<slope2crack*X1 & X1<0) & (Y1>0)) = nan;
+      err((Y2>slope1crack*X2 & X2<0) & (Y2<0))     = nan;    
+      err((Y2<slope2crack*X2 & X2<0) & (Y2>0))     = nan;
+      err((Y2>slope1crack*X2 & X2<0) & (Y2<0))     = nan;    
+      err((Y2<slope2crack*X2 & X2<0) & (Y2>0))     = nan;
+  end  
+  
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-  
+% Plot solution and spatial estimate
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-   
+  figure;
+  
+  subplot(221)
+  contour(X1,Y1,solcont,20);
+  axis square;  axis off; 
+  title(['Solution with P',num2str(pmethod),' approximations']);  %title(titleSolution);
+  outlinedomain(dom_type,xy);
+  
+  subplot(222)
+  trimesh(evt,xy(:,1),xy(:,2),sol);
+  axis square; view(330,30);
+  
+  subplot(223)
+  contour(X2,Y2,err,20);
+  axis square;  axis off; 
+  title('Estimated error');
+  outlinedomain(dom_type,xy);
+ 
+  subplot(224)
+  mesh(X2,Y2,err);           
+  axis square; view(330,30);
+  
+  set(findall(gcf,'-property','Fontsize'),'Fontsize',13);  
+end %end function
+  
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+% Child function
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-  
+function outlinedomain(dom_type,xy)
+% Calling the function outlining the domain in contour plot 
+  if dom_type == 1
+      if min(xy(:,1)) == 0
+          unitsquare;
+      else%min(xy(:,1)) == -1
+          squarex;
+      end
+  elseif dom_type==2
+      ellx;
+  else%dom_type==3
+      largecrack;
+  end
+end % end child function
+##### SOURCE END #####
+--></body></html>

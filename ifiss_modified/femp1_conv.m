@@ -1,9 +1,17 @@
 function [n, xl_v, yl_v,flowx, flowy] = femp1_conv(xy,ev, wind_fn)
-%FEMQ1_CD vectorized bilinear coefficient matrix generator
+%FEMP1_CONV vectorized linear coefficient matrix generator for P1
+%convection terms
+%
+% This function is based upon FEMQ1_CD vectorized bilinear coefficient 
+% matrix generator.
+%
+% BMK 2022
+%
 %    [N] = femq1_cd(xy,ev);
 %   input
 %          xy       vertex coordinate vector
 %          ev       element mapping matrix
+%          wind_fn  advection field to generate matrix for
 %   output
 %          N        convection matrix
 %   Natural boundary conditions apply. Dirichlet conditions

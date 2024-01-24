@@ -1,16 +1,38 @@
 function [eta_y,eta_y_mi,eta_mi] = compute_interpolation_errors(tr,trp1,Z_I_star, I, I_star, fem, params, precompute)
+%COMPUTE_INTERPOLATION_ERRORS Compute thte interpolation error estimators
+%
+% Inputs    tr          time interval start
+%           trp1        time interval end
+%           Z_I_star    data structure of collocation points
+%           I           Sparse grid
+%           I_star      Enhanced sparse grid
+%           fem         Finite element structure
+%           params      Approximation parameters
+%           precompute  Precomputed data
+%
+% Outputs   eta_y       interpolation error estimator
+%           eta_y_mi    interpolation error estimator for each MI
+%           eta_mi      corresponding MI for each estimate
 
+%% Set up params
 ev = fem.ev;
 xy = fem.xy;
 x = xy(:,1);
 y= xy(:,2);
-%% Precompute shared timesteps
 I_star_r = reduce_sparse_grid(I_star);
 I_r = reduce_sparse_grid(I);
+if I_star_r.size==I_r.size
+    pts_in_both_star = 1:I_star_r.size;
+else
 [pts_in_only_star, pts_in_both_star, pts_in_both, pts_in_only ] = compare_sparse_grids(I_star,I_star_r,I,I_r);
+end
+
 Z_I = Z_I_star(pts_in_both_star);
 
-%% Find a common set of times for integrating.
+%% Precompute shared timesteps
+% Union of the timegrids for each collocation point.
+% The approximation is consequently piecewise linear on this.
+% Find a common set of times for integrating.
 t_common=[];
 for ii = 1:length(pts_in_both_star)
     t_common = [t_common; Z_I_star{pts_in_both_star(ii)}.t_z];
@@ -20,7 +42,7 @@ t_common = unique([tr;trp1;t_common]); % finds unique AND sorts
 t_common(t_common < tr) = [];
 t_common(t_common > trp1) = [];
 
-% Inteprolate each solution to common times
+% Interpolate each solution to common times
 for ii_z = 1:length(Z_I)
     Z_I{ii_z}.u_t_common = interp1(Z_I{ii_z}.t_z, (Z_I{ii_z}.u_z).', t_common).';
 end
@@ -30,6 +52,10 @@ n_k = length(t_common);
 %% Now compute estimators
 % Now define suitable batches for estimating interpolation error
 % See Remark 6.1 Guignard and Nobile 2018
+% We sequentially form interpolants by considering only considering the RM
+% (ensuring admissiblity of ((G \cup RM) \cup RM_2) \cup RM_3)...
+% where the original margin is M = \CUP RM_i
+
 % Identify margin
 layer_rm = 1;
 miset = get_mi_set(I);
@@ -38,6 +64,7 @@ G{layer_rm} = miset;
 nM = size(M,1);
 M_remaining = setdiff(M,  [G{layer_rm};RM{layer_rm}]);
 
+% Identify MI in margin that are in RM of G at each "layer"
 while ~isempty(M_remaining)
     G{layer_rm+1} = [G{layer_rm};RM{layer_rm}];
     layer_rm = layer_rm +1;
@@ -51,17 +78,14 @@ while ~isempty(M_remaining)
     M_remaining = setdiff(M, [G{layer_rm};RM{layer_rm}]);
 end
 
+%% Compute advection and diffusion fields for all collocation points
+% Advection and diffusion fields are evalauted at a set of quadrature
+% points on each element for each collocation point
+
 % Define a superset of all points for interpolation
 [~,C] = check_set_admissibility([miset;M]);
 [Isuper] = smolyak_grid_multiidx_set(C,params.knot_fn,params.lev2knots,I);
 Isuper_r = reduce_sparse_grid(Isuper);
-
-% We will need the diffusion and wind fields
-a_fn = fem.a_fn;
-wind_fn = fem.wind_fn;
-
-% Load a set of precomputed points for MC integration
-y_MC = precompute.gamma_pts_for_integration;
 
 % Define quadature points in space
 % Construct 2D gaussian rule over the reference triangle
@@ -99,23 +123,25 @@ for igpt = 1:nngpt
     end
 end
 
-
+%% Compute the interpolation error indicators at each discrete time
 % Now for each time interval
 for ii_k = 1:(n_k)
     fprintf('... for common timestep %d of %d\n',ii_k,n_k)
-    % Assemble matrix for this timestep
+    % Compute spatial gradients for this timestep
     U_I = zeros(size(fem.xy,1),length(Z_I));
     dUx = zeros(size(fem.ev,1),length(Z_I));
     dUy = zeros(size(fem.ev,1),length(Z_I));
-    for ii_z = 1:length(Z_I);
+    for ii_z = 1:length(Z_I)
         U_I(:,ii_z) = [Z_I{ii_z}.u_t_common(:,ii_k)];
         [dUx(:,ii_z), dUy(:,ii_z)] = get_element_gradients(U_I(:,ii_z), fem);
     end
 
-    % Interpolate to superset of points
+    % Interpolate gradients to superset of collocation points
     dUx_super = interpolate_on_sparse_grid(I,I_r, dUx, Isuper_r.knots);
     dUy_super = interpolate_on_sparse_grid(I,I_r, dUy, Isuper_r.knots);
 
+    % Multiply by diff and advection fields
+    % Note this assumes scalar valued diffusion!
     for igpt = 1:nngpt
         aDxU_super(:,:,igpt) = diff_on_super(:,:,igpt) .* dUx_super;
         aDyU_super(:,:,igpt) = diff_on_super(:,:,igpt) .* dUy_super;
@@ -123,12 +149,13 @@ for ii_k = 1:(n_k)
         wyDyU_super(:,:,igpt) = windy_on_super(:,:,igpt) .* dUy_super;
     end
 
-
     jj_mi=0;
-    % For each layer
+    %% For each layer G
+    % For each layer G we compute the error indicators for each MI in the
+    % corresponding RM
     for ii_l = 1:length(G)
         jj_mi = jj_mi+1;
-        % Interpolate from I to G
+        % Interpolate terms from grid I to grid G
         Gii = G{ii_l};
         I_G = smolyak_grid_multiidx_set(Gii,params.knot_fn,params.lev2knots,I);
         I_G_r = reduce_sparse_grid(I_G);
@@ -155,11 +182,9 @@ for ii_k = 1:(n_k)
         % Now we know for pts in G the differnece is zero
         % Compute L^2(D) norms for products of the differences
         % dUQdU(pts_in_both_new) = 0;
-        % Identify the pts in 
+        % Compute for the pts in super grid only.
         l2pairs_diff_gpt = zeros(length(pts_in_super_only),length(pts_in_super_only),nel,nngpt);
-        l2pairs_diff = zeros(length(pts_in_super_only),length(pts_in_super_only));
         l2pairs_wind_gpt = zeros(length(pts_in_super_only),length(pts_in_super_only),nel,nngpt);
-        l2pairs_wind = zeros(length(pts_in_super_only),length(pts_in_super_only));
         for ii = 1:length(pts_in_super_only)
             for jj = 1:ii
                 for igpt = 1:nngpt
@@ -179,24 +204,28 @@ for ii_k = 1:(n_k)
                 end
             end
         end
+        %% Sum over quadrature points on spatial domain
+        % We sum over the elements and the gauss points
         l2pairs_diff = sum(l2pairs_diff_gpt,[3,4]);
         l2pairs_wind = sum(l2pairs_wind_gpt,[3,4]);
-        % use symmetry
+        % use symmetry to complete matrix
         l2pairs_diff = l2pairs_diff + l2pairs_diff.' - diag(diag(l2pairs_diff));
         l2pairs_wind = l2pairs_wind + l2pairs_wind.' - diag(diag(l2pairs_wind));
         
-        % Now embed this in larger matrix
+        % Now embed this in larger matrix for all collocation points
         l2pairs_diff_full = sparse(Isuper_r.size,Isuper_r.size);
         l2pairs_diff_full(pts_in_super_only,pts_in_super_only) = l2pairs_diff;
         l2pairs_wind_full = sparse(Isuper_r.size,Isuper_r.size);
         l2pairs_wind_full(pts_in_super_only,pts_in_super_only) = l2pairs_wind;        
 
-        % We are now in a position to integrate
-        % For each multi-index
+        %% We are now in a position to integrate over parameter domain
+        % For each multi-index in this layer
         RM_l = RM{ii_l};
         for ii_mi = 1:size(RM_l,1)
             mi = RM_l(ii_mi,:);
             fprintf('...... for  mi # %d of %d\n', jj_mi, nM);
+
+            %% Build up sparse grid for G \cup mi
             Gmi = sortrows([Gii;mi],'ascend');
             I_G_mi = smolyak_grid_multiidx_set(Gmi,params.knot_fn,params.lev2knots);
             I_G_mi_r = reduce_sparse_grid(I_G_mi);
@@ -209,17 +238,23 @@ for ii_k = 1:(n_k)
                 inds_I_G_mi_in_Isuper = 1:Isuper_r.size;
             end
 
+            % Extract appropriate subset of precomputed l2 pairs 
             l2pairs_diff_mi = l2pairs_diff_full(inds_I_G_mi_in_Isuper,inds_I_G_mi_in_Isuper);
             l2pairs_wind_mi = l2pairs_wind_full(inds_I_G_mi_in_Isuper,inds_I_G_mi_in_Isuper);
-
+            
+            % Compute L^2_\rho(\Gamma) norms
             eta_diff(ii_k,jj_mi) = calc_l2rho_quick_precalc(I_G_mi_r,l2pairs_diff_mi, precompute.lagrange_product_integrals);
             eta_wind(ii_k,jj_mi) = calc_l2rho_quick_precalc(I_G_mi_r,l2pairs_wind_mi, precompute.lagrange_product_integrals);
-            Poincare=2;
+            
+            % Use known Poincare and compute estimates
+            Poincare=fem.poincare;
             eta_y_k_mi(ii_k,jj_mi) = (eta_diff(ii_k,jj_mi) + Poincare*eta_wind(ii_k,jj_mi));
             eta_mi(jj_mi,:) = mi;
             jj_mi=jj_mi+1;
         end
     end
 end
+
+%% Integrate over time interval to give error indicators.
 eta_y_mi = sqrt(jj_mi*2/3 * dt(:).' * (eta_y_k_mi(1:end-1,:).^2 + eta_y_k_mi(2:end,:).^2));
 eta_y = sqrt(sum(eta_y_mi).^2);

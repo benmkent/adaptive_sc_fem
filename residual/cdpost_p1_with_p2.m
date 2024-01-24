@@ -1,9 +1,10 @@
-function [elerr_p,fe,AE] = cdpost_p1_with_p2(xy,evt,eex,tve,els,eboundt,p1sol,p1timederiv,w_fn,diff_fn)
+function [elerr_p,fe,AE] = cdpost_p1_with_p2(fem,xy,evt,eex,tve,els,eboundt,p1sol,p1timederiv,w_fn,diff_fn,time)
 %CDPOST_P1_WITH_P2 a posteriori estimation for P1 using P2 bubble functions
 %
 %   [elerr_p,fe,AE] = cdpost_p1_with_p2(xy,evt,eex,tve,els,eboundt,p1sol)
 %
 %   input:
+%               fem   fem structure
 %               xy    vertex coordinate vector  
 %              evt    element mapping matrix
 %              eex    element connectivity array
@@ -89,7 +90,7 @@ function [elerr_p,fe,AE] = cdpost_p1_with_p2(xy,evt,eex,tve,els,eboundt,p1sol,p1
 
 % Element residual
 %   [res_int] = intres_p1_with_p2(xy,evt,p1sol);
-  [res_int] = cd_intres_p1_with_p2(xy,evt,p1sol, p1timederiv, w_fn);
+  [res_int] = cd_intres_p1_with_p2(fem, xy,evt,p1sol, p1timederiv, w_fn, time);
 
 % Edge residual
   [res_edge] = cd_edgeres_p1_with_p2(xy,evt,eboundt,p1sol,eex,tve,els,diff_fn);

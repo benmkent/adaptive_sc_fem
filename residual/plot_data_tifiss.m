@@ -1,5 +1,6 @@
-function plot_data(pmethod,dom_type,sol,errelem,evt,xy)
-%PLOT_DATA plots solution as well as the error estimate
+function plot_data_tifiss(pmethod,dom_type,sol,errelem,evt,xy)
+%PLOT_DATA_TIFISS renamed plot_data function from TIFISS 
+% plot_data plots solution as well as the error estimate
 %
 % plot_data(pmethod,dom_type,sol,errelem,evt,xy)
 %
@@ -78,7 +79,7 @@ function plot_data(pmethod,dom_type,sol,errelem,evt,xy)
 % -----------------------------------------------------------------------------  
 % Plot solution and spatial estimate
 % -----------------------------------------------------------------------------   
-  figure;
+  figure(20);
   
   subplot(221)
   contour(X1,Y1,solcont,20);

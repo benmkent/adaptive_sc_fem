@@ -1,5 +1,9 @@
 function [a, h] = femq1_diff_only(xy,ev, a_fn)
-%FEMQ1_DIFF vectorized bilinear coefficient matrix generator
+%femq1_diff_only Modified formulatuion of FEMQ1_DIFF IFISS function to
+%formualte diffusion matrix only using diffusion tensor to allow 
+% anisotropic diffusion.
+%
+% FEMQ1_DIFF vectorized bilinear coefficient matrix generator
 %   [A,Q,f] = femq1_diff(xy,ev);
 %   input
 %          xy         vertex coordinate vector

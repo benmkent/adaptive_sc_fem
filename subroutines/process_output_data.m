@@ -65,19 +65,19 @@ inds_valid = cellfun(@isempty,data_table{:,'pi_I_alpha'});
 
 %% Plot error components
 % h(1) = figure(1);
-plot(data_table,'t','E','LineStyle',':','DisplayName','tol')
+plot(data_table(inds_valid,:),'t','E','LineStyle',':','DisplayName','tol')
 hold on;
-plot(data_table,'t','pi','DisplayName','\pi')
+plot(data_table(inds_valid,:),'t','pi','DisplayName','\pi')
 plot(reference.data_table,'t','error','DisplayName','E^{adapt}');
 set(gca,'XScale','log','YScale','log');
 legend('show');
 xlabel('t');
 h(end+1) = figure();
 hold on;
-plot(data_table,'t','pi_I','DisplayName','\pi_I')
-plot(data_table,'t','pi_I_delta','DisplayName','\pi_{I,\delta}')
-plot(data_table,'t','pi_delta','DisplayName','\pi_{\delta}')
-plot(data_table,'t','E','LineStyle',':','DisplayName','tol')
+plot(data_table(inds_valid,:),'t','pi_I','DisplayName','\pi_I')
+plot(data_table(inds_valid,:),'t','pi_I_delta','DisplayName','\pi_{I,\delta}')
+plot(data_table(inds_valid,:),'t','pi_delta','DisplayName','\pi_{\delta}')
+plot(data_table(inds_valid,:),'t','E','LineStyle',':','DisplayName','tol')
 
 % plot(data_table{:,'t'},data_table{:,'pi_delta'}+data_table{:,'pi_I_delta'},'DisplayName','Corr+TS')
 % plot(reference.data_table,'t','error','DisplayName','True');

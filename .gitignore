@@ -3,3 +3,6 @@
 !/.gitignore  # except `gitignore`
 *.mat
 *.dat
+*.h
+*.so
+/.CondaPkg/**/*.*  # ignore all dotted files

@@ -1,4 +1,4 @@
-function [intres] = cd_intres_p1_with_p2(xy,evt,p1sol, p1timederiv, w_fn)
+function [intres] = cd_intres_p1_with_p2(fem, xy,evt,p1sol, p1timederiv, w_fn, time)
 %INTRES_P1_WITH_P2 interior residuals for P1 solution using P2 bubble functions
 %
 %   [intres] = cd_intres_p1_with_p2(xy,xl_s,yl_s,evt,p1sol)
@@ -28,16 +28,28 @@ y = xy(:,2);
 nel = length(evt(:,1));
 
 % Recover local coordinates and local solution
+% Additionally require local BC function to compute residuals
+bc = zeros(size(p1sol));
+bc_prime = bc;
+
+bc(fem.bound) = fem.bc_fn(time);
+bc_prime(fem.bound) = fem.bc_fn_prime(time);
+
 for ivtx = 1:3
     xl_v(:,ivtx) = x(evt(:,ivtx));
     yl_v(:,ivtx) = y(evt(:,ivtx));
     sl_v(:,ivtx) = p1sol(evt(:,ivtx));
     sldt_v(:,ivtx) = p1timederiv(evt(:,ivtx));
+    bc_v(:,ivtx) = bc(evt(:,ivtx));
+    bc_prime_v(:,ivtx) = bc_prime(evt(:,ivtx));
 end
 
 % Construct 2D gaussian rule over the reference triangle
-nngpt = 7;
-[s,t,wt] = triangular_gausspoints(nngpt);
+% nngpt = 7;
+% [s,t,wt] = triangular_gausspoints(nngpt);
+% USe centroid approximation
+nngpt = 1; 
+s(1)=0.333333333333333;  t(1)=0.333333333333333;  wt(1)=1;
 
 % Preallocate matrices
 intres = zeros(nel,4);
@@ -60,20 +72,22 @@ for igpt = 1:nngpt
     % Source f. Zero forcing in BMK test problem.
     [rhs_f] = 0*tgauss_source(sigpt,tigpt,xl_v,yl_v);
 
-      nel = length(xl_v(:,1));
-      zero_v = zeros(nel,1); 
-      xx = zero_v;
-      yy = xx;
+    %rhs_f = gauss_bc(sigpt, tigpt,xl_v,yl_v, fem,time);
 
-      % Wind field at integration pt
-      [phi_e,dphids,dphidt] = tshape(sigpt,tigpt);
-      for ivtx=1:3
-          xx = xx + phi_e(ivtx) * xl_v(:,ivtx);
-          yy = yy + phi_e(ivtx) * yl_v(:,ivtx);
-      end
-      [flow] = w_fn(xx,yy);
-      windx = flow(:,1);
-      windy = flow(:,2);
+    nel = length(xl_v(:,1));
+    zero_v = zeros(nel,1);
+    xx = zero_v;
+    yy = xx;
+
+    % Wind field at integration pt
+    [phi_e,dphids,dphidt] = tshape(sigpt,tigpt);
+    for ivtx=1:3
+        xx = xx + phi_e(ivtx) * xl_v(:,ivtx);
+        yy = yy + phi_e(ivtx) * yl_v(:,ivtx);
+    end
+    [flow] = w_fn(xx,yy);
+    windx = flow(:,1);
+    windy = flow(:,2);
 
     % Loop over the four bubble functions
     for j = 1:4
@@ -84,15 +98,15 @@ for igpt = 1:nngpt
         % Compute div(a*grad)-contribution = grad(a)*grad(u_tau): loop
         % over vertices hat functions
         for i = 1:3
-            bde(:,j,i) = bde(:,j,i) + wght * diffx(:) .* dphidx_v(:,i) .* psi_v(:,j+3);
-            bde(:,j,i) = bde(:,j,i) + wght * diffy(:) .* dphidy_v(:,i) .* psi_v(:,j+3);
-%         end
-        % Compute - w dot \grad u
-%         for i = 1:3
-            bde(:,j,i) = bde(:,j,i) - wght * windx(:).*sl_v(:,i) .* dphidx_v(:,i) .* psi_v(:,j+3);
-            bde(:,j,i) = bde(:,j,i) - wght * windy(:).*sl_v(:,i).* dphidy_v(:,i)  .* psi_v(:,j+3);
-        % Compute  - Dt U 
-            bde(:,j,i) = bde(:,j,i) - wght .* sldt_v(:,i) .* phi_v(:,i) .*jac_v(:) .* psi_v(:,j+3);
+            bde(:,j,i) = bde(:,j,i) + wght * diffx(:) .* (bc_v(:,i) - sl_v(:,i)).* dphidx_v(:,i) .* psi_v(:,j+3);
+            bde(:,j,i) = bde(:,j,i) + wght * diffy(:) .* (bc_v(:,i) - sl_v(:,i)).* dphidy_v(:,i) .* psi_v(:,j+3);
+            %         end
+            % Compute - w dot \grad u
+            %         for i = 1:3
+            bde(:,j,i) = bde(:,j,i) - wght * windx(:).*(bc_v(:,i) + sl_v(:,i)) .* dphidx_v(:,i) .* psi_v(:,j+3);
+            bde(:,j,i) = bde(:,j,i) - wght * windy(:).*(bc_v(:,i) + sl_v(:,i)).* dphidy_v(:,i)  .* psi_v(:,j+3);
+            % Compute  - Dt U
+            bde(:,j,i) = bde(:,j,i) - wght .* (bc_prime_v(:,i) + sldt_v(:,i)) .* phi_v(:,i) .*jac_v(:) .* psi_v(:,j+3);
         end
         % end vertices hat functions loop
     end

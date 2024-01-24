@@ -1,0 +1,247 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>femp1_diff_only</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-09-27"><meta name="DC.source" content="femp1_diff_only.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [a, h] = femp1_diff_only(xy,evt, a_fn)
+<span class="comment">%FEMP1_DIFF_ONLY set up linear anisotropic diffusion matrices for P1 mesh.</span>
+<span class="comment">% Based upon TIFISS code.</span>
+<span class="comment">%FEMP1_DIFF  set up linear anisotropic diffusion matrices</span>
+<span class="comment">%   [A,Q,f,Ae,Qe] = femp1_diff(xy,evt);</span>
+<span class="comment">%   input</span>
+<span class="comment">%          xy         vertex coordinate vector</span>
+<span class="comment">%          evt        element mapping matrix</span>
+<span class="comment">%   output</span>
+<span class="comment">%          A          diffusion matrix</span>
+<span class="comment">%          Q          mass matrix</span>
+<span class="comment">%          f          rhs vector</span>
+<span class="comment">%          Ae         element diffusion matrices</span>
+<span class="comment">%          Qe         element mass matrices</span>
+<span class="comment">%</span>
+<span class="comment">%   Natural boundary conditions apply. Dirichlet conditions</span>
+<span class="comment">%   must be explicitly enforced by calling function nonzerobc.</span>
+<span class="comment">%    TIFISS function: DJS; 3 March 2017.</span>
+<span class="comment">% Copyright (c) 2007 C.E. Powell, D.J. Silvester</span>
+x=xy(:,1); y=xy(:,2);
+nvtx=length(x);
+nel=length(evt(:,1));
+fprintf(<span class="string">'setting up P1 diffusion matrices...  '</span>)
+<span class="comment">%</span>
+<span class="comment">% initialise global matrices</span>
+      a = sparse(nvtx,nvtx);
+      h = sparse(nvtx,nvtx);
+<span class="comment">%</span>
+<span class="comment">% inner loop over elements</span>
+        <span class="keyword">for</span> ivtx = 1:3
+        xl_v(:,ivtx) = x(evt(:,ivtx));
+        yl_v(:,ivtx) = y(evt(:,ivtx));
+	    <span class="keyword">end</span>
+        ae = zeros(nel,3,3);
+        he = zeros(nel,3,3);
+<span class="comment">%</span>
+<span class="comment">%  Gauss rule integration</span>
+<span class="comment">%          sigpt=1/3;</span>
+<span class="comment">%          tigpt=1/3;</span>
+<span class="comment">%          wt=1/2;</span>
+nngpt=7; [s,t,wt]=triangular_gausspoints(nngpt);
+
+<span class="keyword">for</span> igpt=1:nngpt
+   sigpt=s(igpt);
+    tigpt=t(igpt);
+    wtigpt=wt(igpt);
+<span class="comment">%  evaluate derivatives etc</span>
+         [jac,invjac,phi,dphidx,dphidy] = tderiv(sigpt,tigpt,xl_v,yl_v);
+<span class="comment">%          [diffx,diffy] = tgauss_adiff(sigpt,tigpt,xl_v,yl_v);</span>
+         nel=length(xl_v(:,1));
+         zero_v = zeros(nel,1); xx=zero_v; yy=xx;
+         [xi,dxids,dxidt] = tshape(sigpt,tigpt);
+         <span class="keyword">for</span> ivtx=1:3
+             xx = xx + xi(ivtx) * xl_v(:,ivtx);
+             yy = yy + xi(ivtx) * yl_v(:,ivtx);
+         <span class="keyword">end</span>
+<span class="comment">%         diffx = a_fn(xx,yy);</span>
+<span class="comment">%         diffy = a_fn(xx,yy);</span>
+
+<span class="comment">%         for kk = 1:size(xx,1);</span>
+            diff_matrix = a_fn(xx(:),yy(:));
+             <span class="keyword">for</span> j = 1:3
+                   <span class="keyword">for</span> i = 1:3
+                   ae(:,i,j) = ae(:,i,j) + wtigpt* diff_matrix(:,1) .* dphidx(:,i).*dphidx(:,j) .* invjac(:);
+                   ae(:,i,j) = ae(:,i,j) + wtigpt* diff_matrix(:,2) .* dphidx(:,i).*dphidy(:,j) .* invjac(:);
+                   ae(:,i,j) = ae(:,i,j) + wtigpt* diff_matrix(:,3) .* dphidy(:,i).*dphidx(:,j) .* invjac(:);
+                   ae(:,i,j) = ae(:,i,j) + wtigpt* diff_matrix(:,4) .*dphidy(:,i).*dphidy(:,j) .* invjac(:);
+                   he(:,i,j) = he(:,i,j) + wtigpt* dphidx(:,i).*dphidx(:,j) .* invjac(:);
+                   he(:,i,j) = he(:,i,j) + wtigpt* dphidy(:,i).*dphidy(:,j) .* invjac(:);
+                   <span class="keyword">end</span>
+             <span class="keyword">end</span>
+<span class="comment">%         end</span>
+<span class="keyword">end</span>
+<span class="comment">%</span>
+<span class="comment">% perform assembly of global matrix  and source vector</span>
+      <span class="keyword">for</span> krow=1:3
+	  nrow=evt(:,krow);
+          <span class="keyword">for</span> kcol=1:3
+		  ncol=evt(:,kcol);
+          a = a + sparse(nrow,ncol,ae(:,krow,kcol),nvtx,nvtx);
+          h = h + sparse(nrow,ncol,he(:,krow,kcol),nvtx,nvtx);
+          <span class="keyword">end</span>
+<span class="comment">%      f(nrow,1) = f(nrow,1) + fe(:,krow)</span>
+      <span class="keyword">end</span>
+<span class="comment">%</span>
+<span class="keyword">return</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [a, h] = femp1_diff_only(xy,evt, a_fn)
+%FEMP1_DIFF_ONLY set up linear anisotropic diffusion matrices for P1 mesh.
+% Based upon TIFISS code.
+%FEMP1_DIFF  set up linear anisotropic diffusion matrices
+%   [A,Q,f,Ae,Qe] = femp1_diff(xy,evt);
+%   input
+%          xy         vertex coordinate vector  
+%          evt        element mapping matrix
+%   output
+%          A          diffusion matrix
+%          Q          mass matrix 
+%          f          rhs vector
+%          Ae         element diffusion matrices
+%          Qe         element mass matrices
+%
+%   Natural boundary conditions apply. Dirichlet conditions
+%   must be explicitly enforced by calling function nonzerobc.
+%    TIFISS function: DJS; 3 March 2017.
+% Copyright (c) 2007 C.E. Powell, D.J. Silvester
+x=xy(:,1); y=xy(:,2);
+nvtx=length(x);
+nel=length(evt(:,1));
+fprintf('setting up P1 diffusion matrices...  ')
+%
+% initialise global matrices
+      a = sparse(nvtx,nvtx);
+      h = sparse(nvtx,nvtx);
+%
+% inner loop over elements    
+        for ivtx = 1:3
+        xl_v(:,ivtx) = x(evt(:,ivtx));
+        yl_v(:,ivtx) = y(evt(:,ivtx)); 
+	    end
+        ae = zeros(nel,3,3);
+        he = zeros(nel,3,3);
+%
+%  Gauss rule integration
+%          sigpt=1/3;
+%          tigpt=1/3;
+%          wt=1/2;
+nngpt=7; [s,t,wt]=triangular_gausspoints(nngpt);
+
+for igpt=1:nngpt
+   sigpt=s(igpt);
+    tigpt=t(igpt);
+    wtigpt=wt(igpt);
+%  evaluate derivatives etc
+         [jac,invjac,phi,dphidx,dphidy] = tderiv(sigpt,tigpt,xl_v,yl_v);
+%          [diffx,diffy] = tgauss_adiff(sigpt,tigpt,xl_v,yl_v); 
+         nel=length(xl_v(:,1));
+         zero_v = zeros(nel,1); xx=zero_v; yy=xx;
+         [xi,dxids,dxidt] = tshape(sigpt,tigpt);
+         for ivtx=1:3
+             xx = xx + xi(ivtx) * xl_v(:,ivtx);
+             yy = yy + xi(ivtx) * yl_v(:,ivtx);
+         end
+%         diffx = a_fn(xx,yy);
+%         diffy = a_fn(xx,yy);
+
+%         for kk = 1:size(xx,1);
+            diff_matrix = a_fn(xx(:),yy(:));
+             for j = 1:3
+                   for i = 1:3
+                   ae(:,i,j) = ae(:,i,j) + wtigpt* diff_matrix(:,1) .* dphidx(:,i).*dphidx(:,j) .* invjac(:);
+                   ae(:,i,j) = ae(:,i,j) + wtigpt* diff_matrix(:,2) .* dphidx(:,i).*dphidy(:,j) .* invjac(:);
+                   ae(:,i,j) = ae(:,i,j) + wtigpt* diff_matrix(:,3) .* dphidy(:,i).*dphidx(:,j) .* invjac(:);
+                   ae(:,i,j) = ae(:,i,j) + wtigpt* diff_matrix(:,4) .*dphidy(:,i).*dphidy(:,j) .* invjac(:);
+                   he(:,i,j) = he(:,i,j) + wtigpt* dphidx(:,i).*dphidx(:,j) .* invjac(:);
+                   he(:,i,j) = he(:,i,j) + wtigpt* dphidy(:,i).*dphidy(:,j) .* invjac(:);
+                   end
+             end
+%         end
+end
+%
+% perform assembly of global matrix  and source vector
+      for krow=1:3
+	  nrow=evt(:,krow);	 
+          for kcol=1:3
+		  ncol=evt(:,kcol);	  
+          a = a + sparse(nrow,ncol,ae(:,krow,kcol),nvtx,nvtx);
+          h = h + sparse(nrow,ncol,he(:,krow,kcol),nvtx,nvtx);
+          end
+%      f(nrow,1) = f(nrow,1) + fe(:,krow)
+      end
+%
+return
+
+
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,151 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>localbc_p_bc</title><meta name="generator" content="MATLAB 9.13"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2023-09-27"><meta name="DC.source" content="localbc_p_bc.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> [ae,fe] = localbc_p(ae,fe,edges,xl,yl,bc_fn)
+<span class="comment">%LOCALBC_P  imposes Dirichlet BC for Poisson error estimator</span>
+<span class="comment">%</span>
+<span class="comment">%   [ae,fe] = localbc_p(ae,fe,edges,xl,yl)</span>
+<span class="comment">%</span>
+<span class="comment">%   input</span>
+<span class="comment">%               ae     Poisson problem matrix</span>
+<span class="comment">%               fe     rhs vector</span>
+<span class="comment">%            edges     boundary edge vector</span>
+<span class="comment">%           xl, yl     vertex coordinates</span>
+<span class="comment">%   output</span>
+<span class="comment">%               ae     Poisson problem matrix</span>
+<span class="comment">%               fe     rhs vector</span>
+<span class="comment">%</span>
+<span class="comment">% Function(s) called:  specific_bc</span>
+<span class="comment">%</span>
+<span class="comment">%   TIFISS function: LR; 05 October 2017.</span>
+<span class="comment">% Copyright (c) 2017 A. Bespalov, L. Rocchi</span>
+
+  nbd = length(edges);  <span class="comment">% number of boundary edges (either 1 or 2)</span>
+
+<span class="comment">% Loop over boundary edges</span>
+  <span class="keyword">for</span> bd = 1:nbd
+      ek = edges(bd);   <span class="comment">% edge's number (1,2, or 3)</span>
+      <span class="comment">% Recover boundary edge coordinates</span>
+      xbd(1) = xl(ek+1);    xbd(3) = xl(ek+2);    xbd(2) = 0.5*(xbd(1) + xbd(3));
+      ybd(1) = yl(ek+1);    ybd(3) = yl(ek+2);    ybd(2) = 0.5*(ybd(1) + ybd(3));
+      <span class="comment">% Boundary error</span>
+      [bc] = bc_fn(xbd,ybd);
+      error = bc(2) - 0.5*(bc(1) + bc(3));
+      <span class="comment">% Impose boundary condition without modifying the other equations (DJS/DK mod)</span>
+      <span class="comment">% fe = fe - error*ae(:,ek);</span>
+      ae(:,ek)  = 0.0;
+      ae(ek,:)  = 0.0;
+      ae(ek,ek) = 1.0;
+      fe(ek)    = error;
+  <span class="keyword">end</span>
+
+<span class="keyword">end</span> <span class="comment">% end function</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function [ae,fe] = localbc_p(ae,fe,edges,xl,yl,bc_fn)
+%LOCALBC_P  imposes Dirichlet BC for Poisson error estimator
+%
+%   [ae,fe] = localbc_p(ae,fe,edges,xl,yl)
+%
+%   input
+%               ae     Poisson problem matrix
+%               fe     rhs vector
+%            edges     boundary edge vector 
+%           xl, yl     vertex coordinates  
+%   output 
+%               ae     Poisson problem matrix
+%               fe     rhs vector
+%
+% Function(s) called:  specific_bc
+%
+%   TIFISS function: LR; 05 October 2017.
+% Copyright (c) 2017 A. Bespalov, L. Rocchi
+
+  nbd = length(edges);  % number of boundary edges (either 1 or 2) 
+
+% Loop over boundary edges
+  for bd = 1:nbd
+      ek = edges(bd);   % edge's number (1,2, or 3)
+      % Recover boundary edge coordinates
+      xbd(1) = xl(ek+1);    xbd(3) = xl(ek+2);    xbd(2) = 0.5*(xbd(1) + xbd(3));
+      ybd(1) = yl(ek+1);    ybd(3) = yl(ek+2);    ybd(2) = 0.5*(ybd(1) + ybd(3));      
+      % Boundary error
+      [bc] = bc_fn(xbd,ybd);
+      error = bc(2) - 0.5*(bc(1) + bc(3));
+      % Impose boundary condition without modifying the other equations (DJS/DK mod)
+      % fe = fe - error*ae(:,ek);
+      ae(:,ek)  = 0.0;
+      ae(ek,:)  = 0.0;
+      ae(ek,ek) = 1.0; 
+      fe(ek)    = error; 
+  end
+  
+end % end function
+##### SOURCE END #####
+--></body></html>
