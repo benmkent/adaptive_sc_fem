@@ -1,3 +1,5 @@
-
+/**/.*  # ignore all dotted files
+/**/.*/ # ignore all dotted folders
+!/.gitignore  # except `gitignore`
 *.mat
 *.dat
